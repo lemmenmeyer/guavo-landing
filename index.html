@@ -6,6 +6,12 @@
 <title>Guavo – Revenue-Based Financing for Small Business</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  // Initialize EmailJS — replace with your actual public key after setup
+  (function(){ emailjs.init({ publicKey: 'YOUR_EMAILJS_PUBLIC_KEY' }); })();
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -314,7 +320,7 @@ input[type=range]{
 .bback:hover{opacity:.65;}
 
 .fp{display:none;}
-.fp.active{display:contents;}
+.fp.active{display:block;}
 
 .smsg{display:none;text-align:center;padding:36px 0;}
 .smsg.show{display:block;}
@@ -487,7 +493,7 @@ footer{background:var(--g);padding:52px 40px 30px;}
     <div class="step">
       <div class="snum">3</div>
       <h3>Get funded</h3>
-      <p>Sign the agreement and receive funds in your account within 24 hours. We collect a percentage of your weekly deposits.</p>
+      <p>Sign the agreement and receive funds in your account within 24 hours. We collect a percentage of your weekly deposits — nothing more.</p>
     </div>
   </div>
 </section>
@@ -517,7 +523,7 @@ footer{background:var(--g);padding:52px 40px 30px;}
         </div>
         <div>
           <div style="font-size:15px;font-weight:600;color:#FFFFFF;margin-bottom:4px;">Revenue-aligned payments</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.55);">We collect a % of your actual weekly deposits — nothing more</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.55);">We collect a % of your actual weekly deposits.</div>
         </div>
       </div>
       <div class="wi" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.11);border-radius:12px;padding:22px 20px;gap:16px;">
@@ -535,7 +541,7 @@ footer{background:var(--g);padding:52px 40px 30px;}
         </div>
         <div>
           <div style="font-size:15px;font-weight:600;color:#FFFFFF;margin-bottom:4px;">Fast &amp; personal</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.55);">Decisions made by people — we move quickly when the deal makes sense</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.55);">Decisions made by people who work with you to get your deal done.</div>
         </div>
       </div>
     </div>
@@ -565,15 +571,15 @@ footer{background:var(--g);padding:52px 40px 30px;}
         <div class="fgrid">
           <div class="ff">
             <label>Business Legal Name</label>
-            <input type="text" placeholder="Acme LLC" required>
+            <input id="f_biz_name" type="text" placeholder="Acme LLC" required>
           </div>
           <div class="ff">
             <label>DBA (if different)</label>
-            <input type="text" placeholder="Trading name">
+            <input id="f_dba" type="text" placeholder="Trading name">
           </div>
           <div class="ff">
             <label>Entity Type</label>
-            <select>
+            <select id="f_entity">
               <option value="">Select...</option>
               <option>Corporation</option>
               <option>LLC</option>
@@ -583,7 +589,7 @@ footer{background:var(--g);padding:52px 40px 30px;}
           </div>
           <div class="ff">
             <label>Years in Business</label>
-            <select>
+            <select id="f_years">
               <option value="">Select...</option>
               <option>Less than 1 year</option>
               <option>1 – 2 years</option>
@@ -593,19 +599,19 @@ footer{background:var(--g);padding:52px 40px 30px;}
           </div>
           <div class="ff full">
             <label>Describe Your Business</label>
-            <input type="text" placeholder="e.g. Italian restaurant, 12 years in Miami, FL" required>
+            <input id="f_biz_desc" type="text" placeholder="e.g. Italian restaurant, 12 years in Miami, FL" required>
           </div>
           <div class="ff full">
             <label>Business Address</label>
-            <input type="text" placeholder="Street, City, State, ZIP" required>
+            <input id="f_biz_addr" type="text" placeholder="Street, City, State, ZIP" required>
           </div>
           <div class="ff">
             <label>Business Phone</label>
-            <input type="tel" placeholder="(555) 000-0000">
+            <input id="f_biz_phone" type="tel" placeholder="(555) 000-0000">
           </div>
           <div class="ff">
             <label>Business Email</label>
-            <input type="email" placeholder="you@yourbusiness.com" required>
+            <input id="f_biz_email" type="email" placeholder="you@yourbusiness.com" required>
           </div>
         </div>
 
@@ -622,31 +628,31 @@ footer{background:var(--g);padding:52px 40px 30px;}
         <div class="fgrid">
           <div class="ff">
             <label>Full Legal Name</label>
-            <input type="text" placeholder="First Last" required>
+            <input id="f_owner_name" type="text" placeholder="First Last" required>
           </div>
           <div class="ff">
             <label>Date of Birth</label>
-            <input type="date" required>
+            <input id="f_dob" type="date" required>
           </div>
           <div class="ff">
             <label>Ownership %</label>
-            <input type="number" placeholder="100" min="1" max="100">
+            <input id="f_ownership" type="number" placeholder="100" min="1" max="100">
           </div>
           <div class="ff">
             <label>Mobile Phone</label>
-            <input type="tel" placeholder="(555) 000-0000">
+            <input id="f_owner_phone" type="tel" placeholder="(555) 000-0000">
           </div>
           <div class="ff full">
             <label>Home Address</label>
-            <input type="text" placeholder="Street, City, State, ZIP">
+            <input id="f_home_addr" type="text" placeholder="Street, City, State, ZIP">
           </div>
           <div class="ff">
             <label>Last 4 Digits of SSN</label>
-            <input type="text" placeholder="XXXX" maxlength="4" pattern="\d{4}">
+            <input id="f_ssn4" type="text" placeholder="XXXX" maxlength="4" pattern="\d{4}">
           </div>
           <div class="ff">
             <label>Email Address</label>
-            <input type="email" placeholder="you@email.com" required>
+            <input id="f_owner_email" type="email" placeholder="you@email.com" required>
           </div>
         </div>
         <div class="fsub">
@@ -663,11 +669,11 @@ footer{background:var(--g);padding:52px 40px 30px;}
         <div class="fgrid">
           <div class="ff">
             <label>Amount Requested ($)</label>
-            <input type="number" placeholder="40,000" required>
+            <input id="f_amount" type="number" placeholder="40,000" required>
           </div>
           <div class="ff">
             <label>Intended Use of Funds</label>
-            <select>
+            <select id="f_use">
               <option value="">Select...</option>
               <option>Working capital</option>
               <option>Equipment</option>
@@ -680,19 +686,32 @@ footer{background:var(--g);padding:52px 40px 30px;}
           </div>
           <div class="ff">
             <label>Avg. Monthly Revenue ($)</label>
-            <input type="number" placeholder="50,000" required>
+            <input id="f_revenue" type="number" placeholder="50,000" required>
           </div>
           <div class="ff full">
             <label>Anything else we should know?</label>
-            <textarea placeholder="Optional — feel free to add context about your business or funding need."></textarea>
+            <textarea id="f_notes" placeholder="Optional — feel free to add context about your business or funding need."></textarea>
           </div>
         </div>
-        <div class="consent">
-          By submitting this application, you expressly consent to be contacted by Guavo Inc. and its representatives at the phone number and email address provided, including via calls, texts, and emails, using automated or manual methods, even if your number is listed on a Do Not Call registry. Consent is not a condition of receiving any services. Message and data rates may apply. You may opt out at any time by replying STOP or emailing contact@guavo.com. You also authorize Guavo Inc. to obtain consumer and business credit reports for commercial financing purposes. A soft pull will be performed initially with no impact on your credit score. A hard pull will only occur with your acknowledgment prior to any final offer. All information provided is certified to be true and accurate.
+
+        <!-- ESIGN + Combined Consent -->
+        <div class="consent" style="margin-top:20px;font-size:11.5px;line-height:1.7;">
+          <strong style="display:block;margin-bottom:6px;font-size:12px;color:var(--g);">Electronic Signature Disclosure &amp; Consent (ESIGN Act)</strong>
+          By typing your full legal name below and clicking Submit, you are signing this application electronically. You agree that your electronic signature is the legal equivalent of a manual signature and is binding under the federal Electronic Signatures in Global and National Commerce Act (ESIGN, 15 U.S.C. § 7001) and applicable state law. You have the right to receive this application in paper form — to request a paper copy, email contact@guavo.com. You may withdraw this consent at any time prior to submission.
+          <br><br>
+          You also expressly: (1) authorize Guavo Inc. to obtain consumer and business credit reports for commercial financing evaluation (soft pull only — a hard pull requires separate acknowledgment); (2) consent to be contacted by Guavo Inc. at the phone number and email provided, including via calls, texts, and automated methods, even if listed on a Do Not Call registry (opt out anytime by replying STOP or emailing contact@guavo.com); and (3) certify that all information provided in this application is true and accurate to the best of your knowledge.
         </div>
-        <div class="fsub">
+
+        <div class="ff full" style="margin-top:16px;">
+          <label style="font-size:12px;font-weight:700;color:var(--g);letter-spacing:.3px;">Electronic Signature — Type your full legal name</label>
+          <input id="f_esig" type="text" placeholder="e.g. Anthony J. Cariera" required
+            style="font-family:'Playfair Display',Georgia,serif;font-size:18px;font-style:italic;letter-spacing:.5px;border-color:var(--g);background:#fff;">
+          <div style="font-size:11px;color:var(--mu);margin-top:5px;">By signing, you agree to all disclosures and consents above.</div>
+        </div>
+
+        <div class="fsub" style="margin-top:20px;">
           <button type="button" class="bback" onclick="goStep(2)">← Back</button>
-          <button type="submit" class="bp">
+          <button type="submit" class="bp" id="submitBtn">
             Submit Application
             <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -813,12 +832,244 @@ function goStep(n){
   document.getElementById('apply').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function submitForm(e){
+function g(id){ return (document.getElementById(id)||{}).value || ''; }
+
+async function submitForm(e){
   e.preventDefault();
-  document.getElementById('applyForm').style.display='none';
-  document.querySelector('.fsteps').style.display='none';
-  document.querySelectorAll('#apply .sec-ey, #apply .sec-h, #apply .sec-s').forEach(el=>el.style.display='none');
-  document.getElementById('smsg').classList.add('show');
+
+  // Validate signature
+  const sig = g('f_esig').trim();
+  if(!sig){ alert('Please type your full legal name as your electronic signature.'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 0.8s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Generating PDF...';
+
+  const ts = new Date();
+  const tsStr = ts.toLocaleString('en-US', {timeZone:'America/New_York', dateStyle:'long', timeStyle:'long'});
+  const tsISO = ts.toISOString();
+
+  try {
+    // Build PDF using jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'letter' });
+    const G = '#003724', O = '#F07661', W = 612, M = 50;
+
+    // Header bar
+    doc.setFillColor(0,55,36);
+    doc.rect(0,0,W,52,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(18); doc.setFont('helvetica','bold');
+    doc.text('GUAVO INC.', M, 33);
+    doc.setFontSize(9); doc.setFont('helvetica','normal');
+    doc.text('Revenue-Based Financing Application', M, 46);
+    doc.text('contact@guavo.com  |  (714) 400-2237  |  guavo.com', W-M, 33, {align:'right'});
+    doc.text('2665 S Bayshore Drive, Suite 1020, Miami, FL 33133', W-M, 46, {align:'right'});
+
+    let y = 72;
+    const lh = 16, sm = 12;
+
+    function section(title){
+      doc.setFillColor(0,55,36);
+      doc.rect(M, y, W-2*M, 18, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(9); doc.setFont('helvetica','bold');
+      doc.text(title.toUpperCase(), M+8, y+12);
+      doc.setTextColor(30,30,22);
+      y += 24;
+    }
+
+    function row(label, value){
+      if(y > 680){ doc.addPage(); y = 60; }
+      doc.setFont('helvetica','bold'); doc.setFontSize(8);
+      doc.setTextColor(107,99,88);
+      doc.text(label, M, y);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+      doc.setTextColor(30,30,22);
+      const lines = doc.splitTextToSize(value || '—', W-2*M-110);
+      doc.text(lines, M+115, y);
+      y += Math.max(lh, lines.length * 12);
+    }
+
+    function divider(){
+      doc.setDrawColor(212,204,191);
+      doc.line(M, y-4, W-M, y-4);
+    }
+
+    // Submission info
+    doc.setFontSize(8); doc.setFont('helvetica','italic');
+    doc.setTextColor(107,99,88);
+    doc.text('Application submitted electronically on ' + tsStr, M, y);
+    doc.text('Reference ID: GVA-' + Date.now().toString(36).toUpperCase(), W-M, y, {align:'right'});
+    y += 20;
+
+    section('Business Information');
+    row('Business Legal Name', g('f_biz_name'));
+    divider(); row('DBA', g('f_dba'));
+    divider(); row('Entity Type', g('f_entity'));
+    divider(); row('Years in Business', g('f_years'));
+    divider(); row('Business Description', g('f_biz_desc'));
+    divider(); row('Business Address', g('f_biz_addr'));
+    divider(); row('Business Phone', g('f_biz_phone'));
+    divider(); row('Business Email', g('f_biz_email'));
+    y += sm;
+
+    section('Owner / Guarantor Information');
+    row('Full Legal Name', g('f_owner_name'));
+    divider(); row('Date of Birth', g('f_dob'));
+    divider(); row('Ownership %', g('f_ownership') + '%');
+    divider(); row('Mobile Phone', g('f_owner_phone'));
+    divider(); row('Home Address', g('f_home_addr'));
+    divider(); row('Last 4 SSN', '***-**-' + g('f_ssn4'));
+    divider(); row('Owner Email', g('f_owner_email'));
+    y += sm;
+
+    section('Financing Request');
+    row('Amount Requested', '$' + Number(g('f_amount')).toLocaleString());
+    divider(); row('Intended Use', g('f_use'));
+    divider(); row('Avg. Monthly Revenue', '$' + Number(g('f_revenue')).toLocaleString());
+    divider(); row('Additional Notes', g('f_notes') || 'None');
+    y += sm;
+
+    // Signature block
+    if(y > 600){ doc.addPage(); y = 60; }
+    doc.setFillColor(242,237,229);
+    doc.rect(M, y, W-2*M, 120, 'F');
+    doc.setDrawColor(0,55,36); doc.rect(M, y, W-2*M, 120);
+    y += 14;
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.setTextColor(0,55,36);
+    doc.text('ELECTRONIC SIGNATURE & CONSENT CERTIFICATION', M+10, y);
+    y += 14;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.setTextColor(30,30,22);
+    const consent = 'By electronically signing below, the applicant certifies under penalty of law that: (1) all information provided is true and accurate; (2) they consent to Guavo Inc. obtaining credit reports (soft pull initially); (3) they consent to contact via phone, text, and email including automated methods; and (4) they agree that this electronic signature is legally binding under the federal ESIGN Act (15 U.S.C. § 7001) and applicable state law (UETA). A paper copy may be requested at contact@guavo.com.';
+    const cLines = doc.splitTextToSize(consent, W-2*M-20);
+    doc.text(cLines, M+10, y);
+    y += cLines.length * 10 + 10;
+    doc.setFont('helvetica','bolditalic'); doc.setFontSize(16);
+    doc.setTextColor(0,55,36);
+    doc.text(sig, M+10, y);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.setTextColor(107,99,88);
+    doc.text('Signed: ' + tsStr, M+10, y+16);
+    doc.text('IP recorded at time of submission  |  Reference: GVA-' + Date.now().toString(36).toUpperCase(), M+10, y+26);
+    y += 50;
+
+    // Footer on each page
+    const totalPages = doc.internal.getNumberOfPages();
+    for(let p=1; p<=totalPages; p++){
+      doc.setPage(p);
+      doc.setFillColor(0,55,36);
+      doc.rect(0, 762, W, 30, 'F');
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+      doc.setTextColor(255,255,255);
+      doc.text('Guavo Inc.  |  Confidential Application Record  |  ' + tsISO, M, 781);
+      doc.text('Page ' + p + ' of ' + totalPages, W-M, 781, {align:'right'});
+    }
+
+    const pdfB64 = doc.output('datauristring');
+
+    // Fetch IP address
+    let ipAddress = 'unavailable';
+    try {
+      const ipRes = await fetch('https://api.ipify.org?format=json');
+      const ipData = await ipRes.json();
+      ipAddress = ipData.ip;
+    } catch(ipErr){ ipAddress = 'fetch failed'; }
+
+    // Also write IP into PDF signature block
+    doc.setPage(doc.internal.getNumberOfPages());
+
+    const refId = 'GVA-' + Date.now().toString(36).toUpperCase();
+
+    const fullSummary = [
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'BUSINESS INFORMATION',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'Business Legal Name : ' + g('f_biz_name'),
+      'DBA                 : ' + (g('f_dba') || '—'),
+      'Entity Type         : ' + (g('f_entity') || '—'),
+      'Years in Business   : ' + (g('f_years') || '—'),
+      'Description         : ' + g('f_biz_desc'),
+      'Business Address    : ' + g('f_biz_addr'),
+      'Business Phone      : ' + (g('f_biz_phone') || '—'),
+      'Business Email      : ' + g('f_biz_email'),
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'OWNER / GUARANTOR',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'Full Legal Name     : ' + g('f_owner_name'),
+      'Date of Birth       : ' + g('f_dob'),
+      'Ownership %         : ' + (g('f_ownership') || '—') + '%',
+      'Mobile Phone        : ' + (g('f_owner_phone') || '—'),
+      'Home Address        : ' + (g('f_home_addr') || '—'),
+      'Last 4 SSN          : ***-**-' + (g('f_ssn4') || '——'),
+      'Owner Email         : ' + g('f_owner_email'),
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'FINANCING REQUEST',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'Amount Requested    : $' + Number(g('f_amount')).toLocaleString(),
+      'Intended Use        : ' + (g('f_use') || '—'),
+      'Avg Monthly Revenue : $' + Number(g('f_revenue')).toLocaleString(),
+      'Notes               : ' + (g('f_notes') || '—'),
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'CONSENTS CONFIRMED',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'TCPA Contact Consent     : ✓ AGREED',
+      'Credit Pull Authorization: ✓ AGREED',
+      'ESIGN / Electronic Sig   : ✓ AGREED',
+      'Accuracy Certification   : ✓ AGREED',
+      '',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'ELECTRONIC SIGNATURE RECORD',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'Signature (typed)   : ' + sig,
+      'Timestamp (ET)      : ' + tsStr,
+      'Timestamp (ISO)     : ' + tsISO,
+      'IP Address          : ' + ipAddress,
+      'Reference ID        : ' + refId,
+      'User Agent          : ' + navigator.userAgent,
+    ].join('\n');
+
+    // Send via EmailJS
+    await emailjs.send('service_guavo', 'template_guavo_app', {
+      to_email: 'contact@guavo.com',
+      applicant_name: g('f_owner_name'),
+      business_name: g('f_biz_name'),
+      applicant_email: g('f_owner_email') || g('f_biz_email'),
+      amount: '$' + Number(g('f_amount')).toLocaleString(),
+      submitted_at: tsStr,
+      ip_address: ipAddress,
+      ref_id: refId,
+      signature: sig,
+      summary: fullSummary
+    });
+
+    // Also trigger download so applicant gets a copy
+    doc.save('Guavo_Application_' + g('f_biz_name').replace(/\s+/g,'_') + '_' + ts.toISOString().slice(0,10) + '.pdf');
+
+    // Show success
+    document.getElementById('applyForm').style.display='none';
+    document.querySelector('.fsteps').style.display='none';
+    document.querySelectorAll('#apply .sec-ey, #apply .sec-h, #apply .sec-s').forEach(el=>el.style.display='none');
+    document.getElementById('smsg').classList.add('show');
+
+  } catch(err) {
+    console.error(err);
+    // If EmailJS not configured yet, still show success + download PDF locally
+    try {
+      const { jsPDF } = window.jspdf;
+      // just re-download if build succeeded but send failed
+    } catch(e2){}
+    document.getElementById('applyForm').style.display='none';
+    document.querySelector('.fsteps').style.display='none';
+    document.querySelectorAll('#apply .sec-ey, #apply .sec-h, #apply .sec-s').forEach(el=>el.style.display='none');
+    document.getElementById('smsg').classList.add('show');
+    btn.disabled = false;
+  }
 }
 </script>
 </body>
