@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accessibility Statement – Guavo</title>
+
+<!-- Google Analytics 4 with Consent Mode v2 (loaded default-denied) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-X0GRGG40QF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'functionality_storage': 'granted',
+    'security_storage': 'granted',
+    'wait_for_update': 500
+  });
+  gtag('js', new Date());
+  gtag('config', 'G-X0GRGG40QF', {
+    'anonymize_ip': true,
+    'allow_google_signals': false,
+    'allow_ad_personalization_signals': false
+  });
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g:#003724; --gm:#1A5C3A; --cr:#FAF8F4; --wm:#F2EDE5;
+  --tx:#1A1A16; --mu:#6B6358; --bd:#D4CCBF;
+  --fd:'Playfair Display',Georgia,serif;
+  --fb:'DM Sans',system-ui,sans-serif;
+}
+body{font-family:var(--fb);background:var(--cr);color:var(--tx);line-height:1.65;}
+.wrap{max-width:760px;margin:0 auto;padding:80px 32px 120px;}
+.eyebrow{display:inline-block;background:var(--wm);border:1px solid var(--bd);border-radius:100px;padding:5px 14px;font-size:11.5px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--gm);margin-bottom:24px;}
+h1{font-family:var(--fd);font-weight:700;font-size:44px;line-height:1.15;color:var(--g);margin-bottom:12px;}
+.updated{color:var(--mu);font-size:14px;margin-bottom:48px;}
+h2{font-family:var(--fd);font-weight:700;font-size:24px;color:var(--g);margin:40px 0 12px;}
+p,li{color:var(--tx);font-size:15.5px;margin-bottom:12px;}
+ul{padding-left:22px;margin-bottom:12px;}
+a{color:var(--gm);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;}
+a:hover{color:var(--g);}
+strong{font-weight:600;}
+.callout{background:var(--wm);border-left:3px solid var(--gm);padding:16px 20px;margin:20px 0;border-radius:3px;}
+*:focus-visible{outline:2px solid var(--g);outline-offset:2px;}
+.skip{position:absolute;left:-9999px;top:0;background:var(--g);color:#fff;padding:12px 20px;z-index:9999;text-decoration:none;font-weight:600;}
+.skip:focus{left:0;}
+</style>
+</head>
+<body>
+<a href="#main" class="skip">Skip to content</a>
+<main id="main">
+<div class="wrap">
+
+  <span class="eyebrow">Legal</span>
+  <h1>Accessibility Statement</h1>
+  <p class="updated">Last updated: July 9, 2026</p>
+
+  <p>Guavo Inc. is committed to making <a href="https://www.guavo.com/">guavo.com</a> usable by as many people as possible, including people with disabilities. This statement explains our approach, the standard we target, the known limitations, and how you can reach us if you encounter a barrier.</p>
+
+  <h2>Standard we target</h2>
+  <p>We aim to meet the <strong>Web Content Accessibility Guidelines (WCAG) 2.1, Level AA</strong>. This is the standard referenced by the US Department of Justice under Title III of the Americans with Disabilities Act (ADA), by Section 508 for federal contractors, and by most state accessibility laws.</p>
+
+  <h2>What we&rsquo;ve done</h2>
+  <ul>
+    <li>Every form field has a programmatic label so screen readers can announce it.</li>
+    <li>Text contrast has been checked against WCAG AA thresholds (4.5:1 for normal text, 3:1 for large text and non-text UI).</li>
+    <li>A visible focus indicator appears on every interactive element for keyboard navigation.</li>
+    <li>The page has a &ldquo;Skip to content&rdquo; link and a proper document landmark structure.</li>
+    <li>Status messages (form success, qualification result) are announced to assistive technology via ARIA live regions.</li>
+    <li>Decorative graphics are hidden from screen readers so they don&rsquo;t clutter the audio experience.</li>
+    <li>The cookie consent banner supports keyboard operation and equal-prominence Accept and Reject choices.</li>
+  </ul>
+
+  <h2>Known limitations</h2>
+  <p>Accessibility is a moving target. Areas we know still need work:</p>
+  <ul>
+    <li>The application form uses a JavaScript alert for one validation step. We plan to replace it with an inline error message linked to the field via <code>aria-describedby</code>.</li>
+    <li>We have not commissioned an independent third-party audit yet.</li>
+    <li>The custom range sliders in the qualification tool are operable with keyboard, but the visible thumb and its underlying range input could be more tightly coupled visually.</li>
+  </ul>
+
+  <h2>Assistive technologies we test with</h2>
+  <p>Our internal checks use current versions of:</p>
+  <ul>
+    <li><strong>Screen readers:</strong> NVDA (Windows / Firefox), VoiceOver (macOS / Safari and iOS)</li>
+    <li><strong>Keyboard-only navigation</strong> using Tab, Shift+Tab, Enter, and arrow keys</li>
+    <li><strong>Browser zoom</strong> up to 200%</li>
+    <li>Automated tools (WAVE, axe DevTools) for continuous monitoring</li>
+  </ul>
+
+  <h2>Third-party content</h2>
+  <p>Some parts of the site are supplied by third parties whose accessibility we cannot fully control:</p>
+  <ul>
+    <li><strong>Klaro</strong> renders the cookie consent banner. Klaro follows WAI-ARIA authoring practices for dialogs.</li>
+    <li><strong>Google Fonts</strong> loads our typefaces. It has no user-facing UI.</li>
+    <li><strong>Google Analytics</strong> is loaded only after you consent; it has no user-facing UI on this site.</li>
+  </ul>
+  <p>If a third-party component blocks you from using the site, please tell us and we&rsquo;ll work with the vendor or find a substitute.</p>
+
+  <h2>How to report a barrier or request an accommodation</h2>
+  <div class="callout">
+    <p style="margin:0;">Email <a href="mailto:contact@guavo.com">contact@guavo.com</a> with the subject &ldquo;Accessibility.&rdquo; Please tell us the page URL, the assistive technology or setup you were using, and what happened. We aim to respond within <strong>5 business days</strong> and to fix the issue as soon as reasonably possible.</p>
+  </div>
+  <p>If you need information from the site in an alternative format (large print, plain text, or read to you over the phone), let us know and we&rsquo;ll provide it.</p>
+
+  <h2>Formal complaints</h2>
+  <p>If you&rsquo;re not satisfied with our response, you can file a complaint with the US Department of Justice&rsquo;s Civil Rights Division (<a href="https://www.ada.gov/file-a-complaint/" target="_blank" rel="noopener">ada.gov/file-a-complaint</a>) or with your state&rsquo;s attorney general.</p>
+
+  <p style="margin-top:56px;font-size:14px;color:var(--mu);">
+    <a href="/" style="color:var(--mu);">← Back to guavo.com</a>
+    &nbsp;·&nbsp;
+    <a href="/privacy.html" style="color:var(--mu);">Privacy Policy</a>
+    &nbsp;·&nbsp;
+    <a href="/terms.html" style="color:var(--mu);">Terms of Service</a>
+  </p>
+
+</div>
+</main>
+
+<!-- Klaro consent manager (self-hosted) -->
+<link rel="stylesheet" href="/assets/klaro/klaro.min.css">
+<script src="/assets/klaro/klaro-config.js"></script>
+<script defer src="/assets/klaro/klaro.js"></script>
+</body>
+</html>
