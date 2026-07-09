@@ -52,9 +52,15 @@ table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px;}
 th,td{border:1px solid var(--bd);padding:10px 12px;text-align:left;vertical-align:top;}
 th{background:var(--wm);font-weight:600;color:var(--g);}
 code{background:var(--wm);padding:2px 6px;border-radius:3px;font-size:13px;}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+*:focus-visible{outline:2px solid var(--g);outline-offset:2px;}
+.skip{position:absolute;left:-9999px;top:0;background:var(--g);color:#fff;padding:12px 20px;z-index:9999;text-decoration:none;font-weight:600;}
+.skip:focus{left:0;}
 </style>
 </head>
 <body>
+<a href="#main" class="skip">Skip to content</a>
+<main id="main">
 <div class="wrap">
 
   <span class="eyebrow">Legal</span>
@@ -91,12 +97,17 @@ code{background:var(--wm);padding:2px 6px;border-radius:3px;font-size:13px;}
 
   <h2>Cookies used</h2>
   <table>
-    <tr><th>Cookie</th><th>Set by</th><th>Purpose</th><th>Lifetime</th></tr>
-    <tr><td><code>klaro</code></td><td>Guavo (site itself)</td><td>Remembers your cookie-banner choice.</td><td>180 days</td></tr>
-    <tr><td><code>_ga</code></td><td>Google Analytics</td><td>Distinguishes unique visitors. <strong>Only set if you accept analytics.</strong></td><td>13 months</td></tr>
-    <tr><td><code>_ga_&lt;ID&gt;</code></td><td>Google Analytics</td><td>Session state for the specific GA4 property. <strong>Only set if you accept analytics.</strong></td><td>13 months</td></tr>
+    <caption class="sr-only">Cookies that may be set on your device</caption>
+    <thead>
+      <tr><th scope="col">Cookie</th><th scope="col">Set by</th><th scope="col">Purpose</th><th scope="col">Lifetime</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>klaro</code></td><td>Guavo (site itself)</td><td>Remembers your cookie-banner choice.</td><td>180 days</td></tr>
+      <tr><td><code>_ga</code></td><td>Google Analytics</td><td>Distinguishes unique visitors. <strong>Only set if you accept analytics.</strong></td><td>13 months</td></tr>
+      <tr><td><code>_ga_&lt;ID&gt;</code></td><td>Google Analytics</td><td>Session state for the specific GA4 property. <strong>Only set if you accept analytics.</strong></td><td>13 months</td></tr>
+    </tbody>
   </table>
-  <p>You can withdraw your consent at any time by clicking <a href="#" onclick="if(window.klaro){klaro.show();}return false;">Cookie settings</a>. Rejecting will remove the GA cookies from your device.</p>
+  <p>You can withdraw your consent at any time by clicking <button type="button" onclick="if(window.klaro){klaro.show();}" style="background:none;border:none;padding:0;font:inherit;color:var(--gm);text-decoration:underline;cursor:pointer;" aria-label="Open cookie settings">Cookie settings</button>. Rejecting will remove the GA cookies from your device.</p>
 
   <h2>How long we keep the data</h2>
   <p>Analytics event data is retained in Google Analytics for 14 months, then deleted automatically. Aggregate, non-identifiable reports may be kept longer. Application form submissions are retained as long as needed to evaluate your financing request and to comply with our legal record-keeping obligations, then deleted on request.</p>
@@ -117,7 +128,7 @@ code{background:var(--wm);padding:2px 6px;border-radius:3px;font-size:13px;}
   <p>To exercise any of these rights, email <a href="mailto:contact@guavo.com">contact@guavo.com</a>. We&rsquo;ll respond within 30 days.</p>
 
   <h2>California residents (CCPA / CPRA)</h2>
-  <p>We do not sell your personal information for money. We also do not &ldquo;share&rdquo; personal information for cross-context behavioral advertising as defined under the California Privacy Rights Act. In other words: <strong>we have nothing to opt out of on the &ldquo;Do Not Sell or Share&rdquo; front, because we don&rsquo;t do it in the first place.</strong> If you still want to withdraw analytics consent, click <a href="#" onclick="if(window.klaro){klaro.show();}return false;">Cookie settings</a>. We also honor the Global Privacy Control (GPC) browser signal.</p>
+  <p>We do not sell your personal information for money. We also do not &ldquo;share&rdquo; personal information for cross-context behavioral advertising as defined under the California Privacy Rights Act. In other words: <strong>we have nothing to opt out of on the &ldquo;Do Not Sell or Share&rdquo; front, because we don&rsquo;t do it in the first place.</strong> If you still want to withdraw analytics consent, click <button type="button" onclick="if(window.klaro){klaro.show();}" style="background:none;border:none;padding:0;font:inherit;color:var(--gm);text-decoration:underline;cursor:pointer;" aria-label="Open cookie settings">Cookie settings</button>. We also honor the Global Privacy Control (GPC) browser signal.</p>
 
   <h2>Residents of other US states</h2>
   <p>If you live in Colorado, Connecticut, Virginia, Utah, Texas, Oregon, Montana, Tennessee, Delaware, New Hampshire, New Jersey, Iowa, Indiana, or any other state with a comprehensive consumer privacy law, the rights listed above apply to you as well. Email <a href="mailto:contact@guavo.com">contact@guavo.com</a> to exercise them.</p>
@@ -136,9 +147,16 @@ code{background:var(--wm);padding:2px 6px;border-radius:3px;font-size:13px;}
   <h2>Contact</h2>
   <p>Questions, requests, or complaints: <a href="mailto:contact@guavo.com">contact@guavo.com</a>. If you&rsquo;re in the EU and prefer to lodge a complaint with a supervisory authority, you can do so with the data protection authority of your country of residence.</p>
 
-  <a href="/" class="back">← Back to guavo.com</a>
+  <p style="margin-top:56px;font-size:14px;color:var(--mu);">
+    <a href="/" style="color:var(--mu);">← Back to guavo.com</a>
+    &nbsp;·&nbsp;
+    <a href="/terms.html" style="color:var(--mu);">Terms of Service</a>
+    &nbsp;·&nbsp;
+    <button type="button" onclick="if(window.klaro){klaro.show();}" style="background:none;border:none;padding:0;font:inherit;color:var(--mu);text-decoration:underline;cursor:pointer;" aria-label="Open cookie settings">Cookie settings</button>
+  </p>
 
 </div>
+</main>
 
 <!-- Klaro consent manager (self-hosted) -->
 <link rel="stylesheet" href="/assets/klaro/klaro.min.css">
