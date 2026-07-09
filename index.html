@@ -4,6 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Guavo – Revenue-Based Financing for Small Business</title>
+
+<!-- Google Analytics 4 with Consent Mode v2 (loaded default-denied) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-X0GRGG40QF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'functionality_storage': 'granted',
+    'security_storage': 'granted',
+    'wait_for_update': 500
+  });
+  gtag('js', new Date());
+  gtag('config', 'G-X0GRGG40QF', {
+    'anonymize_ip': true,
+    'allow_google_signals': false,
+    'allow_ad_personalization_signals': false
+  });
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -751,7 +774,11 @@ footer{background:var(--g);padding:52px 40px 30px;}
   </div>
   <div class="fbot">
     <span>© 2025 Guavo Inc. All rights reserved.</span>
-    <span>&nbsp;</span>
+    <span>
+      <a href="/privacy.html" style="color:rgba(255,255,255,.55);text-decoration:none;">Privacy</a>
+      &nbsp;·&nbsp;
+      <a href="#" onclick="if(window.klaro){klaro.show();}return false;" style="color:rgba(255,255,255,.55);text-decoration:none;cursor:pointer;">Cookie settings</a>
+    </span>
   </div>
 </footer>
 
@@ -1113,8 +1140,24 @@ async function submitForm(e){
       summary: fullSummary
     });
 
+    if (typeof gtag === 'function') {
+      gtag('event', 'generate_lead', {
+        method: 'contact_form',
+        value: Number(g('f_amount')) || 0,
+        currency: 'USD'
+      });
+    }
+
     // Also trigger download so applicant gets a copy
     doc.save('Guavo_Application_' + g('f_biz_name').replace(/\s+/g,'_') + '_' + ts.toISOString().slice(0,10) + '.pdf');
+
+    if (typeof gtag === 'function') {
+      gtag('event', 'file_download', {
+        file_name: 'Guavo_Application.pdf',
+        file_extension: 'pdf',
+        link_text: 'application_pdf'
+      });
+    }
 
     // Show success
     document.getElementById('applyForm').style.display='none';
@@ -1137,5 +1180,10 @@ async function submitForm(e){
   }
 }
 </script>
+
+<!-- Klaro consent manager (self-hosted) -->
+<link rel="stylesheet" href="/assets/klaro/klaro.min.css">
+<script src="/assets/klaro/klaro-config.js"></script>
+<script defer src="/assets/klaro/klaro.js"></script>
 </body>
 </html>
