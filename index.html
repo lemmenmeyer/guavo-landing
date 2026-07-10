@@ -739,6 +739,30 @@ input[type=range]:focus-visible + .slider-thumb,
           </div>
         </div>
 
+        <!-- Bank Statements (optional) -->
+        <div class="stmt-block" style="margin-top:22px;padding:20px 22px;background:var(--wm);border:1px solid var(--bd);border-radius:var(--r);">
+          <div style="font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Bank Statements (optional — strongly recommended)</div>
+          <p style="font-size:12.5px;color:var(--mu);margin-bottom:14px;line-height:1.6;">Upload the last 4 months of business bank statements to speed up review. PDF, JPG, PNG, or HEIC. Up to 2 MB per file.</p>
+          <div class="fgrid" style="gap:14px;">
+            <div class="ff">
+              <label for="f_stmt_1">Most recent month</label>
+              <input id="f_stmt_1" type="file" accept="application/pdf,image/jpeg,image/png,image/heic,image/heif">
+            </div>
+            <div class="ff">
+              <label for="f_stmt_2">1 month prior</label>
+              <input id="f_stmt_2" type="file" accept="application/pdf,image/jpeg,image/png,image/heic,image/heif">
+            </div>
+            <div class="ff">
+              <label for="f_stmt_3">2 months prior</label>
+              <input id="f_stmt_3" type="file" accept="application/pdf,image/jpeg,image/png,image/heic,image/heif">
+            </div>
+            <div class="ff">
+              <label for="f_stmt_4">3 months prior</label>
+              <input id="f_stmt_4" type="file" accept="application/pdf,image/jpeg,image/png,image/heic,image/heif">
+            </div>
+          </div>
+        </div>
+
         <!-- ESIGN + Combined Consent -->
         <div class="consent" style="margin-top:20px;font-size:11.5px;line-height:1.7;">
           <strong style="display:block;margin-bottom:6px;font-size:12px;color:var(--g);">Electronic Signature Disclosure &amp; Consent (ESIGN Act)</strong>
@@ -1138,10 +1162,11 @@ async function submitForm(e){
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
       'CONSENTS CONFIRMED',
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      'TCPA Contact Consent     : ✓ AGREED',
-      'Credit Pull Authorization: ✓ AGREED',
-      'ESIGN / Electronic Sig   : ✓ AGREED',
-      'Accuracy Certification   : ✓ AGREED',
+      'Applicant electronically signed all four required consents',
+      '(TCPA contact, credit pull authorization, ESIGN electronic',
+      'signature, accuracy certification).',
+      '',
+      'Full consent language and signed record: see attached PDF.',
       '',
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
       'ELECTRONIC SIGNATURE RECORD',
@@ -1154,19 +1179,57 @@ async function submitForm(e){
       'User Agent          : ' + navigator.userAgent,
     ].join('\n');
 
-    // Send via EmailJS
-    await emailjs.send('service_0l7hxir', 'template_359hip3', {
-      to_email: 'contact@guavo.com',
-      applicant_name: g('f_owner_name'),
-      business_name: g('f_biz_name'),
-      applicant_email: g('f_owner_email') || g('f_biz_email'),
-      amount: '$' + Number(g('f_amount')).toLocaleString(),
-      submitted_at: tsStr,
-      ip_address: ipAddress,
-      ref_id: refId,
-      signature: sig,
-      summary: fullSummary
+    // Get the generated application PDF as base64 (for API attachment).
+    const pdfBase64 = doc.output('datauristring').split(',')[1];
+    const pdfFilename = 'Guavo_Application_' + refId + '.pdf';
+
+    // Read any optional bank statements the applicant uploaded.
+    // Each file is base64-encoded via FileReader and hard-capped at 2.5 MB
+    // to stay under the serverless-function body ceiling.
+    const bankStatements = [];
+    for (let i = 1; i <= 4; i++) {
+      const input = document.getElementById('f_stmt_' + i);
+      if (!input || !input.files || !input.files[0]) continue;
+      const file = input.files[0];
+      if (file.size > 2_500_000) {
+        throw new Error('File "' + file.name + '" is over 2.5 MB. Please compress it or upload a smaller version.');
+      }
+      const content = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1]);
+        reader.onerror = () => reject(new Error('Could not read "' + file.name + '".'));
+        reader.readAsDataURL(file);
+      });
+      bankStatements.push({
+        filename: file.name,
+        content_type: file.type || 'application/octet-stream',
+        content: content
+      });
+    }
+
+    // Send everything to our serverless function (which then emails via Resend).
+    const submitResp = await fetch('/api/submit-application', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to_email: 'contact@guavo.com',
+        applicant_name: g('f_owner_name'),
+        business_name: g('f_biz_name'),
+        applicant_email: g('f_owner_email') || g('f_biz_email'),
+        amount: '$' + Number(g('f_amount')).toLocaleString(),
+        submitted_at: tsStr,
+        ip_address: ipAddress,
+        ref_id: refId,
+        signature: sig,
+        summary: fullSummary,
+        application_pdf: { filename: pdfFilename, content: pdfBase64 },
+        bank_statements: bankStatements
+      })
     });
+    if (!submitResp.ok) {
+      const errPayload = await submitResp.json().catch(() => ({}));
+      throw new Error(errPayload.error || 'Submission failed. Please try again.');
+    }
 
     if (typeof gtag === 'function') {
       gtag('event', 'generate_lead', {
