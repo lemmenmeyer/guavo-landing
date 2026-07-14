@@ -101,8 +101,20 @@ module.exports = async function handler(req, res) {
         return res.status(413).json({ ok: false, error: 'Total upload size too large — please compress files or upload fewer.' });
       }
       totalBytes += bytes;
+      // Uniquify every statement filename so email clients (Gmail in
+      // particular) don't dedupe attachments that share a name — banks
+      // routinely export statements as "eStatement.pdf" for every month,
+      // which caused a real 4-uploaded → 3-received bug in production.
+      // Also prepend a human-readable month label so the reviewer can tell
+      // which month is which at a glance.
+      const monthLabels = ['most-recent-month', '1mo-prior', '2mo-prior', '3mo-prior'];
+      const monthLabel = monthLabels[i] || `stmt${i + 1}`;
+      const rawName = s.filename || 'bank_statement.pdf';
+      // Strip filesystem-hostile chars but keep the extension.
+      const safeName = rawName.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const uniqueName = `${String(i + 1).padStart(2, '0')}_${monthLabel}_${safeName}`;
       attachments.push({
-        filename: s.filename || `bank_statement_${i + 1}`,
+        filename: uniqueName,
         content: s.content,
       });
     }
