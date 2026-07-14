@@ -779,7 +779,7 @@ input[type=range]:focus-visible + .slider-thumb,
         <!-- Bank Statements (optional) -->
         <div class="stmt-block" style="margin-top:22px;padding:20px 22px;background:var(--wm);border:1px solid var(--bd);border-radius:var(--r);">
           <div style="font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Bank Statements (optional — strongly recommended)</div>
-          <p style="font-size:12.5px;color:var(--mu);margin-bottom:14px;line-height:1.6;">Upload the last 4 months of business bank statements to speed up review. PDF, JPG, PNG, or HEIC. Up to 2 MB per file.</p>
+          <p style="font-size:12.5px;color:var(--mu);margin-bottom:14px;line-height:1.6;">Upload the last 4 months of business bank statements to speed up review. PDF, JPG, PNG, or HEIC. Up to 1 MB per file (3 MB total).</p>
           <div class="fgrid" style="gap:14px;">
             <div class="ff">
               <label for="f_stmt_1">Most recent month</label>
@@ -1252,16 +1252,34 @@ async function submitForm(e){
     const pdfFilename = 'Guavo_Application_' + refId + '.pdf';
 
     // Read any optional bank statements the applicant uploaded.
-    // Each file is base64-encoded via FileReader and hard-capped at 2.5 MB
-    // to stay under the serverless-function body ceiling.
+    // Enforce a per-file cap (1 MB raw) and a total cap (~3 MB raw across all
+    // uploaded statements) so the JSON payload stays under Vercel's 4.5 MB
+    // serverless-function body ceiling once base64 encoding is applied.
+    const MAX_FILE_BYTES  = 1_000_000;  // 1.0 MB per file
+    const MAX_TOTAL_BYTES = 3_000_000;  // 3.0 MB across all statements
     const bankStatements = [];
+    const oversize = [];
+    let totalBytes = 0;
     for (let i = 1; i <= 4; i++) {
       const input = document.getElementById('f_stmt_' + i);
       if (!input || !input.files || !input.files[0]) continue;
       const file = input.files[0];
-      if (file.size > 2_500_000) {
-        throw new Error('File "' + file.name + '" is over 2.5 MB. Please compress it or upload a smaller version.');
+      if (file.size > MAX_FILE_BYTES) {
+        oversize.push(file.name + ' (' + (file.size / 1_000_000).toFixed(2) + ' MB)');
+        continue;
       }
+      totalBytes += file.size;
+    }
+    if (oversize.length > 0) {
+      throw new Error('These files are over the 1 MB per-file limit — please compress or replace them:\n\n' + oversize.join('\n'));
+    }
+    if (totalBytes > MAX_TOTAL_BYTES) {
+      throw new Error('Total upload size is ' + (totalBytes / 1_000_000).toFixed(2) + ' MB, over the 3 MB combined limit. Please compress your bank statements or upload fewer.');
+    }
+    for (let i = 1; i <= 4; i++) {
+      const input = document.getElementById('f_stmt_' + i);
+      if (!input || !input.files || !input.files[0]) continue;
+      const file = input.files[0];
       const content = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result).split(',')[1]);
@@ -1326,16 +1344,12 @@ async function submitForm(e){
 
   } catch(err) {
     console.error(err);
-    // If EmailJS not configured yet, still show success + download PDF locally
-    try {
-      const { jsPDF } = window.jspdf;
-      // just re-download if build succeeded but send failed
-    } catch(e2){}
-    document.getElementById('applyForm').style.display='none';
-    document.querySelector('.fsteps').style.display='none';
-    document.querySelectorAll('#apply .sec-ey, #apply .sec-h, #apply .sec-s').forEach(el=>el.style.display='none');
-    document.getElementById('smsg').classList.add('show');
+    // Surface the actual error to the applicant so they know something went
+    // wrong (previously we misleadingly showed the success screen). Keep the
+    // form visible so they can adjust and retry.
+    alert(err && err.message ? err.message : 'Submission failed. Please try again or email contact@guavo.com.');
     btn.disabled = false;
+    btn.innerHTML = 'Submit Application →';
   }
 }
 </script>
