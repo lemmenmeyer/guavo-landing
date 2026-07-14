@@ -7,7 +7,7 @@
 // Env vars (set these in Vercel → Project → Settings → Environment Variables):
 //   RESEND_API_KEY   — starts with re_..., from resend.com/api-keys
 //   RESEND_FROM      — optional; the "From" address. Defaults to
-//                      "Guavo Applications <applications@guavo.com>", which
+//                      "Guavo Applications <contact@guavo.com>", which
 //                      works because guavo.com is verified in Resend. Override
 //                      only if you want a different display name / address.
 //   RESEND_TO        — optional; recipient. Defaults to contact@guavo.com.
@@ -109,7 +109,7 @@ module.exports = async function handler(req, res) {
   }
 
   // Build the email
-  const fromAddr = process.env.RESEND_FROM || 'Guavo Applications <applications@guavo.com>';
+  const fromAddr = process.env.RESEND_FROM || 'Guavo Applications <contact@guavo.com>';
   const toAddr   = process.env.RESEND_TO   || to_email || 'contact@guavo.com';
 
   const subject = `New application — ${business_name} — ${amount}`;
