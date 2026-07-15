@@ -34,6 +34,11 @@
 //       filename: string,
 //       content:  string,   // base64 (no "data:...;base64," prefix)
 //     },
+//     government_id: {          // required
+//       filename: string,
+//       content_type: string,
+//       content: string,        // base64 (no "data:...;base64," prefix)
+//     },
 //     bank_statements: [        // 0..4 entries
 //       { filename, content_type, content }, ...
 //     ]
@@ -69,7 +74,7 @@ module.exports = async function handler(req, res) {
   const {
     to_email, applicant_name, business_name, applicant_email,
     amount, submitted_at, ip_address, ref_id, signature, summary,
-    application_pdf, bank_statements
+    application_pdf, government_id, bank_statements
   } = body;
 
   // Minimal required-field validation
@@ -81,6 +86,9 @@ module.exports = async function handler(req, res) {
   }
   if (!application_pdf || !application_pdf.content) {
     return res.status(400).json({ ok: false, error: 'Missing application_pdf.content.' });
+  }
+  if (!government_id || !government_id.content || typeof government_id.content !== 'string') {
+    return res.status(400).json({ ok: false, error: 'Missing government_id.content — a government-issued photo ID is required.' });
   }
 
   // Build the Resend attachments array
@@ -94,7 +102,18 @@ module.exports = async function handler(req, res) {
     content: application_pdf.content,
   });
 
-  let totalBytes = appPdfBytes;
+  const govIdBytes = approxBase64Bytes(government_id.content);
+  if (govIdBytes > MAX_ATTACHMENT_BYTES) {
+    return res.status(413).json({ ok: false, error: 'Government ID exceeds size limit.' });
+  }
+  const govIdRawName = government_id.filename || 'government_id';
+  const govIdSafeName = govIdRawName.replace(/[^a-zA-Z0-9._-]/g, '_');
+  attachments.push({
+    filename: `00_government_id_${govIdSafeName}`,
+    content: government_id.content,
+  });
+
+  let totalBytes = appPdfBytes + govIdBytes;
   const droppedStatements = []; // record any statement that arrived malformed
   if (Array.isArray(bank_statements)) {
     for (let i = 0; i < Math.min(4, bank_statements.length); i++) {
@@ -136,7 +155,7 @@ module.exports = async function handler(req, res) {
   const fromAddr = process.env.RESEND_FROM || 'Guavo Applications <contact@guavo.com>';
   const toAddr   = process.env.RESEND_TO   || to_email || 'contact@guavo.com';
 
-  const statementCount = attachments.length - 1; // minus the app PDF itself
+  const statementCount = attachments.length - 2; // minus app PDF + government ID
   const subject = `New application — ${business_name} — ${amount}`;
   const html = renderHtmlBody({
     applicant_name, business_name, applicant_email, amount,
@@ -262,7 +281,7 @@ function renderHtmlBody({ applicant_name, business_name, applicant_email, amount
     <tr><td style="padding:6px 0;color:#6B6358;">Electronic Signature</td><td style="padding:6px 0;">${esc(signature)}</td></tr>
   </table>
   <p style="font-size:13px;color:#003724;background:#F2EDE5;padding:12px 14px;border-radius:4px;margin:0 0 20px;">
-    <strong>Attached:</strong> Full signed application PDF${statementCount > 0 ? ` + ${statementCount} uploaded bank statement${statementCount === 1 ? '' : 's'}` : ''}. Forward this email directly to brokers/banks — the PDF carries through cleanly.
+    <strong>Attached:</strong> Full signed application PDF, government-issued photo ID${statementCount > 0 ? `, plus ${statementCount} bank statement${statementCount === 1 ? '' : 's'}` : ''}. Forward this email directly to brokers/banks — the PDF carries through cleanly.
   </p>
   <pre style="font-family:Consolas,Monaco,'Courier New',monospace;font-size:12px;background:#FAF8F4;padding:14px;border-radius:4px;white-space:pre-wrap;color:#1a1a16;border:1px solid #D4CCBF;">${esc(summary)}</pre>
   <p style="font-size:12px;color:#6B6358;margin-top:20px;">Reply directly to this email to reach the applicant.</p>

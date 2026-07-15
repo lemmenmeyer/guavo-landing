@@ -776,6 +776,22 @@ input[type=range]:focus-visible + .slider-thumb,
           </div>
         </div>
 
+        <!-- Government ID (required) -->
+        <div class="stmt-block" style="margin-top:22px;padding:20px 22px;background:var(--wm);border:1px solid var(--bd);border-radius:var(--r);">
+          <div style="font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Government-Issued Photo ID <span style="color:#C85840;">(required)</span></div>
+          <p style="font-size:12.5px;color:var(--mu);margin-bottom:14px;line-height:1.6;">Driver's license, state ID, or passport. PDF, JPG, PNG, or HEIC. Up to 1 MB.</p>
+          <div class="fgrid" style="gap:14px;">
+            <div class="ff full">
+              <label for="f_govid">Photo ID</label>
+              <label class="filepick" for="f_govid">
+                <span class="filepick-btn">Choose file</span>
+                <span class="filepick-name" id="f_govid_name">No file selected</span>
+              </label>
+              <input id="f_govid" type="file" class="filepick-input" accept="application/pdf,image/jpeg,image/png,image/heic,image/heif" required>
+            </div>
+          </div>
+        </div>
+
         <!-- Bank Statements (optional) -->
         <div class="stmt-block" style="margin-top:22px;padding:20px 22px;background:var(--wm);border:1px solid var(--bd);border-radius:var(--r);">
           <div style="font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Bank Statements (optional — strongly recommended)</div>
@@ -1251,6 +1267,32 @@ async function submitForm(e){
     const pdfBase64 = doc.output('datauristring').split(',')[1];
     const pdfFilename = 'Guavo_Application_' + refId + '.pdf';
 
+    // Read the required government ID upload. Underwriting Step 1
+    // (proof-of-ownership) cannot proceed without it.
+    const govIdInput = document.getElementById('f_govid');
+    const govIdFile  = govIdInput && govIdInput.files && govIdInput.files[0];
+    if (!govIdFile) {
+      throw new Error('Please upload a government-issued photo ID (driver\'s license, state ID, or passport).');
+    }
+    if (govIdFile.size > 1_000_000) {
+      throw new Error('Your government ID is ' + (govIdFile.size / 1_000_000).toFixed(2) + ' MB, over the 1 MB limit. Please compress or re-photograph at lower resolution.');
+    }
+    const govIdContent = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const b64 = String(reader.result || '').split(',')[1];
+        if (!b64) return reject(new Error('Could not read your government ID file. Please choose a different file.'));
+        resolve(b64);
+      };
+      reader.onerror = () => reject(new Error('Could not read your government ID file.'));
+      reader.readAsDataURL(govIdFile);
+    });
+    const government_id = {
+      filename: govIdFile.name,
+      content_type: govIdFile.type || 'application/octet-stream',
+      content: govIdContent
+    };
+
     // Read any optional bank statements the applicant uploaded.
     // Enforce a per-file cap (1 MB raw) and a total cap (~3 MB raw across all
     // uploaded statements) so the JSON payload stays under Vercel's 4.5 MB
@@ -1327,6 +1369,7 @@ async function submitForm(e){
         signature: sig,
         summary: fullSummary,
         application_pdf: { filename: pdfFilename, content: pdfBase64 },
+        government_id: government_id,
         bank_statements: bankStatements
       })
     });
