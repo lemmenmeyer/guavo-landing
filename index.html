@@ -844,7 +844,7 @@ input[type=range]:focus-visible + .slider-thumb,
     <div class="smsg" id="smsg" role="status" aria-live="polite">
       <div class="scheck">✓</div>
       <h3>Application received</h3>
-      <p>Thank you. We'll review your file and be in touch within one business day.<br>Questions? Call <a href="tel:+17144002237" style="color:var(--g);">(714) 400-2237</a></p>
+      <p>Thank you. A signed copy of your application has been emailed to you. We'll review your file and be in touch within one business day.<br>Questions? Call <a href="tel:+17144002237" style="color:var(--g);">(714) 400-2237</a></p>
     </div>
 
   </div>
@@ -1276,13 +1276,26 @@ async function submitForm(e){
     if (totalBytes > MAX_TOTAL_BYTES) {
       throw new Error('Total upload size is ' + (totalBytes / 1_000_000).toFixed(2) + ' MB, over the 3 MB combined limit. Please compress your bank statements or upload fewer.');
     }
+    // Count selected files up front — after the read loop we verify every
+    // selected slot produced a valid attachment. Previously an empty read
+    // (e.g. an odd HEIC on iOS Safari) would silently vanish server-side.
+    let selectedCount = 0;
+    for (let i = 1; i <= 4; i++) {
+      const input = document.getElementById('f_stmt_' + i);
+      if (input && input.files && input.files[0]) selectedCount++;
+    }
     for (let i = 1; i <= 4; i++) {
       const input = document.getElementById('f_stmt_' + i);
       if (!input || !input.files || !input.files[0]) continue;
       const file = input.files[0];
       const content = await new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result).split(',')[1]);
+        reader.onload = () => {
+          const dataUrl = String(reader.result || '');
+          const b64 = dataUrl.split(',')[1];
+          if (!b64) return reject(new Error('Could not read "' + file.name + '" — the file may be empty or corrupted. Please choose a different file.'));
+          resolve(b64);
+        };
         reader.onerror = () => reject(new Error('Could not read "' + file.name + '".'));
         reader.readAsDataURL(file);
       });
@@ -1291,6 +1304,11 @@ async function submitForm(e){
         content_type: file.type || 'application/octet-stream',
         content: content
       });
+    }
+
+    // Sanity check: every selected file must have produced a valid attachment.
+    if (bankStatements.length !== selectedCount) {
+      throw new Error('Could not read all uploaded bank statements (' + bankStatements.length + ' of ' + selectedCount + ' processed). Please re-select the files and try again.');
     }
 
     // Send everything to our serverless function (which then emails via Resend).
@@ -1322,17 +1340,6 @@ async function submitForm(e){
         method: 'contact_form',
         value: Number(g('f_amount')) || 0,
         currency: 'USD'
-      });
-    }
-
-    // Also trigger download so applicant gets a copy
-    doc.save('Guavo_Application_' + g('f_biz_name').replace(/\s+/g,'_') + '_' + ts.toISOString().slice(0,10) + '.pdf');
-
-    if (typeof gtag === 'function') {
-      gtag('event', 'file_download', {
-        file_name: 'Guavo_Application.pdf',
-        file_extension: 'pdf',
-        link_text: 'application_pdf'
       });
     }
 
