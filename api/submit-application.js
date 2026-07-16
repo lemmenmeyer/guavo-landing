@@ -2,8 +2,11 @@
 //
 // Receives an application-form submission from the guavo.com client and
 // sends two emails via Resend:
-//   1. A broker-facing email to contact@guavo.com (or RESEND_TO) with the
-//      application PDF + any uploaded bank statements attached.
+//   1. A broker-facing email to apply@guavo.com (or RESEND_TO) with the
+//      application PDF + any uploaded bank statements attached. From apply@
+//      the Google Group forwards to the Monday Pipeline board's "Email to
+//      board" address, which auto-creates an item in the Webpage Pipeline
+//      group with every attachment on the App form file column.
 //   2. An applicant-facing confirmation email to `applicant_email` with only
 //      the application PDF attached. This send is best-effort — if it fails
 //      the request still returns 200 (see applicant_email_status in the
@@ -16,11 +19,14 @@
 //                      "Guavo Applications <contact@guavo.com>", which
 //                      works because guavo.com is verified in Resend. Override
 //                      only if you want a different display name / address.
-//   RESEND_TO        — optional; recipient. Defaults to contact@guavo.com.
+//   RESEND_TO        — optional; recipient. Defaults to apply@guavo.com.
+//                      IMPORTANT: if you previously set RESEND_TO to
+//                      contact@guavo.com in Vercel, update it (or unset it)
+//                      so the new apply@ default takes effect.
 //
 // Client contract (POST body, JSON):
 //   {
-//     to_email:        string,   // recipient — usually contact@guavo.com
+//     to_email:        string,   // recipient — usually apply@guavo.com
 //     applicant_name:  string,
 //     business_name:   string,
 //     applicant_email: string,
@@ -153,7 +159,7 @@ module.exports = async function handler(req, res) {
 
   // Build the email
   const fromAddr = process.env.RESEND_FROM || 'Guavo Applications <contact@guavo.com>';
-  const toAddr   = process.env.RESEND_TO   || to_email || 'contact@guavo.com';
+  const toAddr   = process.env.RESEND_TO   || to_email || 'apply@guavo.com';
 
   const statementCount = attachments.length - 2; // minus app PDF + government ID
   const subject = `New application — ${business_name} — ${amount}`;
