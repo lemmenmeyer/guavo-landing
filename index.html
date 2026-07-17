@@ -415,6 +415,24 @@ footer{background:var(--g);padding:52px 40px 30px;}
   .fi{grid-template-columns:1fr 1fr;}
   nav .nr a:not(.ncta){display:none;}
 }
+/* On narrow viewports the Business / Owner / Financing labels + dots + lines
+   need ~300 px of content width; at 380–500 px the apply card was clipping
+   the third label ("Financing") behind its right edge. Shrink the outer
+   paddings, stack each label under its dot, and let the connecting lines
+   flex evenly so the group stays centered in the card and nothing overflows. */
+@media(max-width:640px){
+  .asec{padding:60px 16px;}
+  .acard{padding:32px 20px;}
+  .fsteps{align-items:flex-start;margin-bottom:26px;}
+  .fstep{flex-direction:column;gap:6px;text-align:center;font-size:10.5px;letter-spacing:.3px;flex:0 1 auto;min-width:0;}
+  .fline{flex:1 1 auto;min-width:8px;margin:11px 4px 0;}
+}
+@media(max-width:380px){
+  .asec{padding:52px 12px;}
+  .acard{padding:24px 16px;}
+  .fstep{font-size:10px;letter-spacing:.25px;}
+  .fline{min-width:4px;margin:11px 2px 0;}
+}
 
 /* Accessibility: focus indicators (WCAG 2.4.7) */
 *:focus-visible{outline:2px solid var(--g);outline-offset:2px;}
