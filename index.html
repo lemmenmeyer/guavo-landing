@@ -414,8 +414,12 @@ footer{background:var(--g);padding:52px 40px 30px;}
   /* Drop min-height:100vh and add explicit padding-bottom so the qcard
      never lands flush against the trust bar. At desktop widths the grid
      is 2-col + vertically centered so the natural gap suffices; on
-     narrow the copy + qcard stack and viewport height becomes irrelevant. */
-  .hero{grid-template-columns:1fr;padding-top:90px;padding-bottom:48px;min-height:auto;}
+     narrow the copy + qcard stack and viewport height becomes irrelevant.
+     Grid gap set to 48px + .ht bottom padding zeroed so the vertical
+     space between the CTA row (.hact) and the qcard mirrors the 48px
+     bottom clearance below the qcard. */
+  .hero{grid-template-columns:1fr;padding-top:90px;padding-bottom:48px;gap:48px;min-height:auto;}
+  .ht{padding:60px 0 0;}
   .steps{grid-template-columns:1fr;}
   .win{grid-template-columns:1fr;}
   .wstats{margin-top:36px;}
