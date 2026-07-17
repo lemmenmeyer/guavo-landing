@@ -411,14 +411,15 @@ footer{background:var(--g);padding:52px 40px 30px;}
 
 /* RESPONSIVE */
 @media(max-width:860px){
-  /* Drop min-height:100vh and add explicit padding-bottom so the qcard
-     never lands flush against the trust bar. At desktop widths the grid
-     is 2-col + vertically centered so the natural gap suffices; on
-     narrow the copy + qcard stack and viewport height becomes irrelevant.
-     Grid gap set to 48px + .ht bottom padding zeroed so the vertical
-     space between the CTA row (.hact) and the qcard mirrors the 48px
-     bottom clearance below the qcard. */
-  .hero{grid-template-columns:1fr;padding-top:90px;padding-bottom:48px;gap:48px;min-height:auto;}
+  /* Drop min-height:100vh so the hero doesn't force a viewport-tall box
+     that pins the qcard flush against the trust bar. Bottom padding at
+     96 px matches the .sec / .wsec / .asec section rhythm elsewhere on
+     the page. Grid gap 52 px mirrors the how-it-works section's
+     subhead-to-first-card spacing (.steps { margin-top: 52 px }), which
+     is the exact top clearance the qcard should feel like — .ht keeps
+     its bottom padding zeroed so the gap the user reads is the pure
+     52 px of the grid gap. */
+  .hero{grid-template-columns:1fr;padding-top:90px;padding-bottom:96px;gap:52px;min-height:auto;}
   .ht{padding:60px 0 0;}
   .steps{grid-template-columns:1fr;}
   .win{grid-template-columns:1fr;}
