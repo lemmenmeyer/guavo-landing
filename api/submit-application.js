@@ -314,11 +314,11 @@ function renderApplicantHtmlBody({ applicant_name, business_name, amount, submit
   <p style="font-size:13px;color:#003724;background:#F2EDE5;padding:12px 14px;border-radius:4px;margin:0 0 20px;">
     A signed copy of your application PDF is attached to this email for your records.
   </p>
-  <p style="margin:0 0 14px;">We aim to respond within one business day. In the meantime, feel free to reply to this email or call <a href="tel:+17144002237" style="color:#003724;">(714) 400-2237</a> if you have questions or want to add supporting documents.</p>
+  <p style="margin:0 0 14px;">We aim to respond within one business day. In the meantime, feel free to reply to this email if you have questions or want to add supporting documents.</p>
   <p style="margin:0 0 4px;">Talk soon,</p>
   <p style="margin:0 0 20px;">The Guavo team</p>
   <hr style="border:none;border-top:1px solid #D4CCBF;margin:20px 0;">
-  <p style="font-size:11px;color:#6B6358;margin:0;">Guavo Inc. &nbsp;|&nbsp; contact@guavo.com &nbsp;|&nbsp; (714) 400-2237 &nbsp;|&nbsp; Miami, FL</p>
+  <p style="font-size:11px;color:#6B6358;margin:0;">Guavo Inc. &nbsp;|&nbsp; contact@guavo.com &nbsp;|&nbsp; Miami, FL</p>
 </body></html>`;
 }
 
@@ -339,11 +339,11 @@ function renderApplicantTextBody({ applicant_name, business_name, amount, submit
     '',
     'A signed copy of your application PDF is attached to this email for your records.',
     '',
-    'We aim to respond within one business day. In the meantime, feel free to reply to this email or call (714) 400-2237 if you have questions or want to add supporting documents.',
+    'We aim to respond within one business day. In the meantime, feel free to reply to this email if you have questions or want to add supporting documents.',
     '',
     'Talk soon,',
     'The Guavo team',
     '',
-    'Guavo Inc. | contact@guavo.com | (714) 400-2237 | Miami, FL',
+    'Guavo Inc. | contact@guavo.com | Miami, FL',
   ].join('\n');
 }
