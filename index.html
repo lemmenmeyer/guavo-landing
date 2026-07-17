@@ -411,7 +411,11 @@ footer{background:var(--g);padding:52px 40px 30px;}
 
 /* RESPONSIVE */
 @media(max-width:860px){
-  .hero{grid-template-columns:1fr;padding-top:90px;}
+  /* Drop min-height:100vh and add explicit padding-bottom so the qcard
+     never lands flush against the trust bar. At desktop widths the grid
+     is 2-col + vertically centered so the natural gap suffices; on
+     narrow the copy + qcard stack and viewport height becomes irrelevant. */
+  .hero{grid-template-columns:1fr;padding-top:90px;padding-bottom:48px;min-height:auto;}
   .steps{grid-template-columns:1fr;}
   .win{grid-template-columns:1fr;}
   .wstats{margin-top:36px;}
