@@ -256,11 +256,6 @@ input[type=range]{
 }
 .step h3{font-size:17px;font-weight:600;color:var(--g);margin-bottom:9px;}
 .step p{font-size:13.5px;color:var(--mu);line-height:1.72;}
-.scon{
-  position:absolute;top:50px;right:-12px;
-  width:24px;height:2px;background:var(--wd);z-index:1;
-}
-.step:last-child .scon{display:none;}
 
 /* WHY */
 .wsec{background:var(--g);padding:96px 40px;}
@@ -408,7 +403,6 @@ footer{background:var(--g);padding:52px 40px 30px;}
 @media(max-width:860px){
   .hero{grid-template-columns:1fr;padding-top:90px;}
   .steps{grid-template-columns:1fr;}
-  .scon{display:none;}
   .win{grid-template-columns:1fr;}
   .wstats{margin-top:36px;}
   .fgrid{grid-template-columns:1fr;}
@@ -561,13 +555,11 @@ input[type=range]:focus-visible + .slider-thumb,
   <p class="sec-s">No lengthy underwriting, no collateral, no surprises. Just straightforward financing that respects how your business actually operates.</p>
   <div class="steps">
     <div class="step">
-      <div class="scon"></div>
       <div class="snum">1</div>
       <h3>Apply in minutes</h3>
       <p>Fill out our simple application with basic information about your business and its owners.</p>
     </div>
     <div class="step">
-      <div class="scon"></div>
       <div class="snum">2</div>
       <h3>Receive your offer</h3>
       <p>We review your file and send a transparent offer showing your funding amount, total repayment, and estimated weekly payment. No hidden fees.</p>
