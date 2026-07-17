@@ -648,6 +648,20 @@ input[type=range]:focus-visible + .slider-thumb,
 
     <form id="applyForm" onsubmit="submitForm(event)">
 
+      <datalist id="us_states">
+        <option value="AL"><option value="AK"><option value="AZ"><option value="AR"><option value="CA">
+        <option value="CO"><option value="CT"><option value="DE"><option value="DC"><option value="FL">
+        <option value="GA"><option value="HI"><option value="ID"><option value="IL"><option value="IN">
+        <option value="IA"><option value="KS"><option value="KY"><option value="LA"><option value="ME">
+        <option value="MD"><option value="MA"><option value="MI"><option value="MN"><option value="MS">
+        <option value="MO"><option value="MT"><option value="NE"><option value="NV"><option value="NH">
+        <option value="NJ"><option value="NM"><option value="NY"><option value="NC"><option value="ND">
+        <option value="OH"><option value="OK"><option value="OR"><option value="PA"><option value="RI">
+        <option value="SC"><option value="SD"><option value="TN"><option value="TX"><option value="UT">
+        <option value="VT"><option value="VA"><option value="WA"><option value="WV"><option value="WI">
+        <option value="WY">
+      </datalist>
+
       <!-- PAGE 1 -->
       <div class="fp active" id="fp1">
         <div class="fgrid">
@@ -684,8 +698,20 @@ input[type=range]:focus-visible + .slider-thumb,
             <input id="f_biz_desc" type="text" placeholder="e.g. Italian restaurant, 12 years in Miami, FL" required>
           </div>
           <div class="ff full">
-            <label for="f_biz_addr">Business Address</label>
-            <input id="f_biz_addr" type="text" placeholder="Street, City, State, ZIP" required>
+            <label for="f_biz_street">Business Street</label>
+            <input id="f_biz_street" type="text" placeholder="1600 Amphitheatre Pkwy" autocomplete="street-address" required>
+          </div>
+          <div class="ff full">
+            <label for="f_biz_city">Business City</label>
+            <input id="f_biz_city" type="text" placeholder="Mountain View" autocomplete="address-level2" required>
+          </div>
+          <div class="ff">
+            <label for="f_biz_state">Business State</label>
+            <input id="f_biz_state" type="text" list="us_states" placeholder="CA" maxlength="2" autocomplete="address-level1" autocapitalize="characters" required>
+          </div>
+          <div class="ff">
+            <label for="f_biz_postal">Business Postal Code</label>
+            <input id="f_biz_postal" type="text" placeholder="94043" pattern="\d{5}(-\d{4})?" inputmode="numeric" autocomplete="postal-code" required>
           </div>
           <div class="ff">
             <label for="f_biz_phone">Business Phone</label>
@@ -709,32 +735,48 @@ input[type=range]:focus-visible + .slider-thumb,
       <div class="fp" id="fp2">
         <div class="fgrid">
           <div class="ff">
-            <label for="f_owner_name">Full Legal Name</label>
-            <input id="f_owner_name" type="text" placeholder="First Last" required>
+            <label for="f_owner_first">First Name</label>
+            <input id="f_owner_first" type="text" placeholder="Maria" autocomplete="given-name" required>
+          </div>
+          <div class="ff">
+            <label for="f_owner_last">Last Name</label>
+            <input id="f_owner_last" type="text" placeholder="Gonzalez Ruiz" autocomplete="family-name" required>
           </div>
           <div class="ff">
             <label for="f_dob">Date of Birth</label>
-            <input id="f_dob" type="date" required>
+            <input id="f_dob" type="date" autocomplete="bday" required>
           </div>
           <div class="ff">
             <label for="f_ownership">Ownership %</label>
-            <input id="f_ownership" type="number" placeholder="100" min="1" max="100">
+            <input id="f_ownership" type="number" placeholder="Enter your %" min="1" max="100" required>
           </div>
           <div class="ff">
             <label for="f_owner_phone">Mobile Phone</label>
-            <input id="f_owner_phone" type="tel" placeholder="(555) 000-0000">
-          </div>
-          <div class="ff full">
-            <label for="f_home_addr">Home Address</label>
-            <input id="f_home_addr" type="text" placeholder="Street, City, State, ZIP">
+            <input id="f_owner_phone" type="tel" placeholder="(555) 000-0000" autocomplete="tel">
           </div>
           <div class="ff">
             <label for="f_ssn4">Last 4 Digits of SSN</label>
-            <input id="f_ssn4" type="text" placeholder="XXXX" maxlength="4" pattern="\d{4}">
+            <input id="f_ssn4" type="text" placeholder="XXXX" maxlength="4" pattern="\d{4}" inputmode="numeric" required>
+          </div>
+          <div class="ff full">
+            <label for="f_owner_email">Email Address</label>
+            <input id="f_owner_email" type="email" placeholder="you@email.com" autocomplete="email" required>
+          </div>
+          <div class="ff full">
+            <label for="f_home_street">Home Street</label>
+            <input id="f_home_street" type="text" placeholder="742 Evergreen Ter" autocomplete="street-address" required>
+          </div>
+          <div class="ff full">
+            <label for="f_home_city">Home City</label>
+            <input id="f_home_city" type="text" placeholder="Springfield" autocomplete="address-level2" required>
           </div>
           <div class="ff">
-            <label for="f_owner_email">Email Address</label>
-            <input id="f_owner_email" type="email" placeholder="you@email.com" required>
+            <label for="f_home_state">Home State</label>
+            <input id="f_home_state" type="text" list="us_states" placeholder="FL" maxlength="2" autocomplete="address-level1" autocapitalize="characters" required>
+          </div>
+          <div class="ff">
+            <label for="f_home_postal">Home Postal Code</label>
+            <input id="f_home_postal" type="text" placeholder="33101" pattern="\d{5}(-\d{4})?" inputmode="numeric" autocomplete="postal-code" required>
           </div>
         </div>
         <div class="fsub">
@@ -997,6 +1039,18 @@ function goStep(n){
 
 function g(id){ return (document.getElementById(id)||{}).value || ''; }
 
+// Compose a human-readable single-line address from 4 discrete inputs.
+// PDF + email display use this so the visual output still reads naturally
+// ("Street, City, ST ZIP"); the webhook payload keeps the 4 keys separate.
+function composeAddress(streetId, cityId, stateId, postalId){
+  const street = g(streetId).trim();
+  const city   = g(cityId).trim();
+  const state  = g(stateId).trim().toUpperCase();
+  const postal = g(postalId).trim();
+  const tail = [state, postal].filter(Boolean).join(' ');
+  return [street, city, tail].filter(Boolean).join(', ');
+}
+
 async function submitForm(e){
   e.preventDefault();
 
@@ -1128,18 +1182,18 @@ async function submitForm(e){
     drawRow('Entity Type', g('f_entity'));
     drawRow('Years in Business', g('f_years'));
     drawRow('Business Description', g('f_biz_desc'));
-    drawRow('Business Address', g('f_biz_addr'));
+    drawRow('Business Address', composeAddress('f_biz_street','f_biz_city','f_biz_state','f_biz_postal'));
     drawRow('Business Phone', g('f_biz_phone'));
     drawRow('Business Email', g('f_biz_email'));
 
     // ── OWNER ────────────────────────────────────────────────
     drawSection('Owner / Guarantor Information');
     rowIndex = 0;
-    drawRow('Full Legal Name', g('f_owner_name'));
+    drawRow('Full Legal Name', [g('f_owner_first'), g('f_owner_last')].filter(Boolean).join(' '));
     drawRow('Date of Birth', g('f_dob'));
     drawRow('Ownership %', (g('f_ownership') || '—') + '%');
     drawRow('Mobile Phone', g('f_owner_phone'));
-    drawRow('Home Address', g('f_home_addr'));
+    drawRow('Home Address', composeAddress('f_home_street','f_home_city','f_home_state','f_home_postal'));
     drawRow('Last 4 SSN', '***-**-' + (g('f_ssn4') || '——'));
     drawRow('Owner Email', g('f_owner_email'));
 
@@ -1220,18 +1274,18 @@ async function submitForm(e){
       'Entity Type         : ' + (g('f_entity') || '—'),
       'Years in Business   : ' + (g('f_years') || '—'),
       'Description         : ' + g('f_biz_desc'),
-      'Business Address    : ' + g('f_biz_addr'),
+      'Business Address    : ' + composeAddress('f_biz_street','f_biz_city','f_biz_state','f_biz_postal'),
       'Business Phone      : ' + (g('f_biz_phone') || '—'),
       'Business Email      : ' + g('f_biz_email'),
       '',
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
       'OWNER / GUARANTOR',
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      'Full Legal Name     : ' + g('f_owner_name'),
+      'Full Legal Name     : ' + [g('f_owner_first'), g('f_owner_last')].filter(Boolean).join(' '),
       'Date of Birth       : ' + g('f_dob'),
       'Ownership %         : ' + (g('f_ownership') || '—') + '%',
       'Mobile Phone        : ' + (g('f_owner_phone') || '—'),
-      'Home Address        : ' + (g('f_home_addr') || '—'),
+      'Home Address        : ' + composeAddress('f_home_street','f_home_city','f_home_state','f_home_postal'),
       'Last 4 SSN          : ***-**-' + (g('f_ssn4') || '——'),
       'Owner Email         : ' + g('f_owner_email'),
       '',
@@ -1359,7 +1413,7 @@ async function submitForm(e){
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         to_email: 'apply@guavo.com',
-        applicant_name: g('f_owner_name'),
+        applicant_name: [g('f_owner_first'), g('f_owner_last')].filter(Boolean).join(' '),
         business_name: g('f_biz_name'),
         applicant_email: g('f_owner_email') || g('f_biz_email'),
         amount: '$' + Number(g('f_amount')).toLocaleString(),
@@ -1370,7 +1424,42 @@ async function submitForm(e){
         summary: fullSummary,
         application_pdf: { filename: pdfFilename, content: pdfBase64 },
         government_id: government_id,
-        bank_statements: bankStatements
+        bank_statements: bankStatements,
+
+        // Pre-split structured fields — the Vercel webhook forwards these
+        // directly to Monday API without any parsing on the server side.
+        business: {
+          legal_name:  g('f_biz_name'),
+          dba:         g('f_dba'),
+          entity_type: g('f_entity'),
+          years_in_business: g('f_years'),
+          description: g('f_biz_desc'),
+          street:      g('f_biz_street'),
+          city:        g('f_biz_city'),
+          state:       g('f_biz_state').toUpperCase(),
+          postal:      g('f_biz_postal'),
+          phone:       g('f_biz_phone'),
+          email:       g('f_biz_email')
+        },
+        owner: {
+          first_name:  g('f_owner_first'),
+          last_name:   g('f_owner_last'),
+          dob:         g('f_dob'),
+          ownership_pct: g('f_ownership'),
+          mobile_phone:  g('f_owner_phone'),
+          ssn_last4:   g('f_ssn4'),
+          street:      g('f_home_street'),
+          city:        g('f_home_city'),
+          state:       g('f_home_state').toUpperCase(),
+          postal:      g('f_home_postal'),
+          email:       g('f_owner_email')
+        },
+        financing: {
+          amount_requested: g('f_amount'),
+          use_of_funds: g('f_use'),
+          monthly_revenue: g('f_revenue'),
+          notes: g('f_notes')
+        }
       })
     });
     if (!submitResp.ok) {
