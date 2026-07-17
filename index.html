@@ -252,6 +252,16 @@ input[type=range]{
   background:var(--wm);
   display:flex;align-items:center;justify-content:center;
   font-family:var(--fd);font-size:17px;font-weight:700;
+  /* Playfair Display's bold "1" carries a top-left serif that shifts its
+     optical center to the right of its character box. Tabular lining
+     figures normalize glyph widths, line-height:1 removes vertical drift
+     from ascender/descender padding, and a whisper of letter-spacing
+     nudges the glyph back into optical center. */
+  line-height:1;
+  font-variant-numeric:lining-nums tabular-nums;
+  font-feature-settings:"lnum" 1, "tnum" 1;
+  letter-spacing:.5px;
+  text-indent:.5px;
   color:var(--g);margin-bottom:18px;
 }
 .step h3{font-size:17px;font-weight:600;color:var(--g);margin-bottom:9px;}
