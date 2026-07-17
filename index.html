@@ -668,20 +668,6 @@ input[type=range]:focus-visible + .slider-thumb,
 
     <form id="applyForm" onsubmit="submitForm(event)">
 
-      <datalist id="us_states">
-        <option value="AL"><option value="AK"><option value="AZ"><option value="AR"><option value="CA">
-        <option value="CO"><option value="CT"><option value="DE"><option value="DC"><option value="FL">
-        <option value="GA"><option value="HI"><option value="ID"><option value="IL"><option value="IN">
-        <option value="IA"><option value="KS"><option value="KY"><option value="LA"><option value="ME">
-        <option value="MD"><option value="MA"><option value="MI"><option value="MN"><option value="MS">
-        <option value="MO"><option value="MT"><option value="NE"><option value="NV"><option value="NH">
-        <option value="NJ"><option value="NM"><option value="NY"><option value="NC"><option value="ND">
-        <option value="OH"><option value="OK"><option value="OR"><option value="PA"><option value="RI">
-        <option value="SC"><option value="SD"><option value="TN"><option value="TX"><option value="UT">
-        <option value="VT"><option value="VA"><option value="WA"><option value="WV"><option value="WI">
-        <option value="WY">
-      </datalist>
-
       <!-- PAGE 1 -->
       <div class="fp active" id="fp1">
         <div class="fgrid">
@@ -727,7 +713,7 @@ input[type=range]:focus-visible + .slider-thumb,
           </div>
           <div class="ff">
             <label for="f_biz_state">Business State</label>
-            <input id="f_biz_state" type="text" list="us_states" placeholder="CA" maxlength="2" autocomplete="address-level1" autocapitalize="characters" required>
+            <select id="f_biz_state" data-us-states autocomplete="address-level1" required></select>
           </div>
           <div class="ff">
             <label for="f_biz_postal">Business Postal Code</label>
@@ -792,7 +778,7 @@ input[type=range]:focus-visible + .slider-thumb,
           </div>
           <div class="ff">
             <label for="f_home_state">Home State</label>
-            <input id="f_home_state" type="text" list="us_states" placeholder="FL" maxlength="2" autocomplete="address-level1" autocapitalize="characters" required>
+            <select id="f_home_state" data-us-states autocomplete="address-level1" required></select>
           </div>
           <div class="ff">
             <label for="f_home_postal">Home Postal Code</label>
@@ -1511,6 +1497,46 @@ async function submitForm(e){
     btn.innerHTML = 'Submit Application →';
   }
 }
+</script>
+
+<!-- Populate US-state selects. Shared source so both business + home state
+     stay in sync; adding a state = one edit. Any <select data-us-states>
+     on the page picks up the full 50 + DC list at load time. Uses <select>
+     (not <input list=datalist>) because browsers — Safari on iPhone in
+     particular — override datalist suggestions with the applicant's own
+     autofill history, which was hiding options the applicant needed. -->
+<script>
+  (function(){
+    var STATES = [
+      ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
+      ['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],
+      ['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],
+      ['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],
+      ['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],
+      ['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],
+      ['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],
+      ['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],
+      ['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],
+      ['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],
+      ['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']
+    ];
+    document.querySelectorAll('select[data-us-states]').forEach(function(sel){
+      var frag = document.createDocumentFragment();
+      var placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Select state';
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      frag.appendChild(placeholder);
+      STATES.forEach(function(row){
+        var opt = document.createElement('option');
+        opt.value = row[0];
+        opt.textContent = row[1];
+        frag.appendChild(opt);
+      });
+      sel.appendChild(frag);
+    });
+  })();
 </script>
 
 <!-- Mark decorative SVGs as aria-hidden so screen readers skip them (WCAG 1.1.1) -->
