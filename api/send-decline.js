@@ -97,9 +97,14 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ challenge: body.challenge });
   }
 
-  // Auth: shared-secret header set by the Monday automation.
+  // Auth: shared-secret via URL query param OR X-Guavo-Webhook-Secret header.
+  // Monday's API-created webhook subscription cannot set custom headers, so
+  // the query-param path is what fires in practice — the header path stays
+  // for any future UI automation or manual curl.
   const expectedSecret = process.env.MONDAY_WEBHOOK_SECRET;
-  const gotSecret      = req.headers['x-guavo-webhook-secret'] || req.headers['X-Guavo-Webhook-Secret'];
+  const querySecret    = (req.query && req.query.secret) || getQueryParam(req.url, 'secret');
+  const headerSecret   = req.headers['x-guavo-webhook-secret'] || req.headers['X-Guavo-Webhook-Secret'];
+  const gotSecret      = querySecret || headerSecret;
   if (!expectedSecret) {
     return res.status(500).json({ ok: false, error: 'MONDAY_WEBHOOK_SECRET is not set on the server.' });
   }
@@ -108,6 +113,21 @@ module.exports = async function handler(req, res) {
   }
 
   const event = body.event || body;
+
+  // Column filter — this endpoint is subscribed to board-wide change_column_value
+  // events (Monday API doesn't accept a column-specific subscription for status
+  // columns on this workspace). Only proceed when the event is on the Decline
+  // Email Status column AND the new value is "Ready". Every other column change
+  // on the board fires this endpoint too and must no-op silently.
+  const eventColumnId = event.columnId || (event.data && event.data.columnId);
+  const eventNewLabel = extractStatusLabel(event.value) || extractStatusLabel(event.data && event.data.value);
+  if (eventColumnId && eventColumnId !== COL.DECLINE_EMAIL_STATUS) {
+    return res.status(200).json({ ok: true, skipped: 'unrelated-column', eventColumnId });
+  }
+  if (eventNewLabel && eventNewLabel !== STATUS.READY) {
+    return res.status(200).json({ ok: true, skipped: 'not-ready', eventNewLabel });
+  }
+
   const itemId = event.pulseId || event.itemId || (event.data && (event.data.pulseId || event.data.itemId));
   if (!itemId) {
     return res.status(400).json({ ok: false, error: 'Webhook payload had no pulseId.' });
@@ -315,6 +335,29 @@ module.exports = async function handler(req, res) {
 // -- Helpers --
 
 function noop() { /* swallow non-fatal Update failures */ }
+
+// Parse a single query parameter out of the request URL. Vercel usually
+// exposes req.query already, but the raw URL fallback is here for the
+// change_column_value event flow.
+function getQueryParam(url, name) {
+  if (!url) return null;
+  const q = url.indexOf('?');
+  if (q < 0) return null;
+  const params = new URLSearchParams(url.slice(q + 1));
+  return params.get(name);
+}
+
+// Monday's change_column_value webhook payload for a status column has
+// value = { label: { text: "Ready", index: 1, style: {...} } }.
+// Handle a few shapes defensively.
+function extractStatusLabel(v) {
+  if (!v) return null;
+  if (typeof v === 'string') return v;
+  if (v.label && typeof v.label === 'object' && v.label.text) return v.label.text;
+  if (typeof v.label === 'string') return v.label;
+  if (v.text) return v.text;
+  return null;
+}
 
 // Monday file column returns a JSON blob like:
 //   value: '{"files":[{"assetId":123,"name":"...","isImage":"false","fileType":"..."}]}'
