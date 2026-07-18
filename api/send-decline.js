@@ -15,7 +15,7 @@
 //      Any failure → post an Update explaining what's missing, DO NOT send,
 //      return 200 (Monday retries 4xx/5xx).
 //   5. Compose the email via the reason-specific template.
-//   6. Send via Resend from patti@guavo.com. If the item has an
+//   6. Send via Resend from daniel@guavo.com. If the item has an
 //      Ack Email Message-ID captured (future-work column), thread the reply.
 //   7. Write Decline Email Status → Sent YYYY-MM-DD and post the rendered
 //      HTML as an audit-trail Update on the item.
@@ -36,7 +36,9 @@ const monday    = require('../lib/monday-client');
 
 const COL = {
   DECLINE_REASON:        'color_mm5af0yz',
+  DECLINE_REASON_2:      'color_mm5b1w2v',
   DECLINE_EMAIL_STATUS:  'color_mm5bvnb',
+  STAGE:                 'color_mm446jj4',
   EXPERIAN_REPORT:       'file_mm5b2cm7',
   FICO:                  'numeric_mm5atj35',
   FICO_PULL_DATE:        'date_mm5bcep2',
@@ -48,6 +50,10 @@ const COL = {
   OWNER_LAST_NAME:       'text_mm5aa9t4',
   BUSINESS_STATE:        'text_mm444jzb',
 };
+
+// Stage label required for a send. Anything else no-ops with an Update so
+// underwriter has to explicitly flip Stage → Declined before the button fires.
+const REQUIRED_STAGE = 'Declined';
 
 // Status labels the automation writes to Decline Email Status. Must match the
 // labels on the Monday column color_mm5bvnb exactly (case-sensitive). The
@@ -65,8 +71,8 @@ const STATUS = {
 // treated as "someone/something already handled this" — no-op with an Update.
 const SENDABLE_STATUSES = new Set([STATUS.NOT_SENT, STATUS.READY, '', null, undefined]);
 
-const FROM_ADDR   = 'Patti at Guavo <patti@guavo.com>';
-const REPLY_TO    = 'patti@guavo.com';
+const FROM_ADDR   = 'Daniel at Guavo <daniel@guavo.com>';
+const REPLY_TO    = 'daniel@guavo.com';
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -118,8 +124,10 @@ module.exports = async function handler(req, res) {
   }
 
   const cols = item.columns || {};
-  const declineReason = (cols[COL.DECLINE_REASON]?.text || '').trim();
-  const currentStatus = (cols[COL.DECLINE_EMAIL_STATUS]?.text || '').trim();
+  const declineReason1 = (cols[COL.DECLINE_REASON]?.text   || '').trim();
+  const declineReason2 = (cols[COL.DECLINE_REASON_2]?.text || '').trim();
+  const currentStatus  = (cols[COL.DECLINE_EMAIL_STATUS]?.text || '').trim();
+  const stage          = (cols[COL.STAGE]?.text || '').trim();
   const applicantEmail = (cols[COL.APPLICANT_EMAIL]?.text || '').trim();
   const businessName   = (cols[COL.BUSINESS_LEGAL_NAME]?.text || item.name || '').trim();
   const businessState  = (cols[COL.BUSINESS_STATE]?.text || '').trim();
@@ -140,34 +148,42 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: true, skipped: 'already-handled', currentStatus });
   }
 
-  if (!declineReason) {
+  if (!declineReason1) {
     await monday.postUpdate(itemId, 'Cannot send decline email: <strong>Decline Reason</strong> column is empty.').catch(noop);
     return res.status(200).json({ ok: true, skipped: 'no-reason' });
   }
 
-  const template = templates[declineReason];
-  if (!template) {
+  // Compose reasons list — Decline Reason 1 is required, Decline Reason 2 is
+  // optional. Dedupe if the same label was set on both columns.
+  const reasonLabels = [declineReason1];
+  if (declineReason2 && declineReason2 !== declineReason1) reasonLabels.push(declineReason2);
+
+  const reasonTemplates = [];
+  const unmappedLabels  = [];
+  for (const label of reasonLabels) {
+    const t = templates[label];
+    if (t) reasonTemplates.push(t);
+    else   unmappedLabels.push(label);
+  }
+  if (unmappedLabels.length > 0) {
     await monday.postUpdate(itemId,
-      `Decline Reason "<strong>${common.escapeHtml(declineReason)}</strong>" has no template mapped — this is treated as a non-adverse-action close. No email sent. If this reason SHOULD send an applicant notice, add it to <code>lib/decline-templates/index.js</code>.`
+      `Decline reason${unmappedLabels.length > 1 ? 's' : ''} <strong>${unmappedLabels.map(common.escapeHtml).join(', ')}</strong> not mapped to a template. Add to <code>lib/decline-templates/index.js</code> or clear the column. No email sent.`
     ).catch(noop);
-    return res.status(200).json({ ok: true, skipped: 'unmapped-reason', declineReason });
+    return res.status(200).json({ ok: true, skipped: 'unmapped-reason', unmappedLabels });
+  }
+
+  // Stage gate — Stage must be Declined before the button fires. Prevents
+  // accidental sends on items still in Underwriting / Proposal Sent / etc.
+  if (stage !== REQUIRED_STAGE) {
+    await monday.postUpdate(itemId,
+      `Cannot send decline email: Stage is "<strong>${common.escapeHtml(stage || '(empty)')}</strong>" — must be "<strong>${REQUIRED_STAGE}</strong>" to fire the decline notice. Flip Stage to ${REQUIRED_STAGE} and re-click.`
+    ).catch(noop);
+    return res.status(200).json({ ok: true, skipped: 'stage-not-declined', stage });
   }
 
   if (!applicantEmail || !applicantEmail.includes('@')) {
     await monday.postUpdate(itemId, 'Cannot send decline email: applicant <strong>Email</strong> column is empty or invalid.').catch(noop);
     return res.status(200).json({ ok: true, skipped: 'no-email' });
-  }
-
-  // State gate — fail closed on any unlisted or blank state.
-  if (!businessState) {
-    await monday.postUpdate(itemId, 'Cannot send decline email: <strong>Business State</strong> is empty. Populate it and re-click.').catch(noop);
-    return res.status(200).json({ ok: true, skipped: 'no-state' });
-  }
-  if (!common.isStateApproved(businessState)) {
-    await monday.postUpdate(itemId,
-      `Cannot send decline email: Business State "<strong>${common.escapeHtml(businessState)}</strong>" is not on the counsel-approved states list yet. Please send this decline manually while counsel reviews wording for this state.`
-    ).catch(noop);
-    return res.status(200).json({ ok: true, skipped: 'state-not-approved', businessState });
   }
 
   const ficoKeyFactors = keyFactorsRaw
@@ -185,15 +201,25 @@ module.exports = async function handler(req, res) {
     ficoKeyFactors,
   };
 
-  const missing = template.missingFields(templateCtx);
-  if (missing.length > 0) {
+  // Union of every reason's missingFields (dedupe by string).
+  const missingAll = Array.from(new Set(
+    reasonTemplates.flatMap(t => t.missingFields(templateCtx))
+  ));
+  if (missingAll.length > 0) {
     await monday.postUpdate(itemId,
-      `Cannot send <strong>${common.escapeHtml(declineReason)}</strong> decline email — missing required field${missing.length > 1 ? 's' : ''}: <strong>${missing.map(common.escapeHtml).join(', ')}</strong>. Populate and re-click the button.`
+      `Cannot send decline email. Missing required field${missingAll.length > 1 ? 's' : ''}: <strong>${missingAll.map(common.escapeHtml).join(', ')}</strong>. Populate and re-click the button.`
     ).catch(noop);
-    return res.status(200).json({ ok: true, skipped: 'missing-fields', missing });
+    return res.status(200).json({ ok: true, skipped: 'missing-fields', missing: missingAll });
   }
 
-  const rendered = template.build(templateCtx);
+  const rendered = common.composeDeclineEmail({
+    ownerFirstName: ownerFirst,
+    businessName,
+    businessState,
+    reasons: reasonTemplates,
+    experianReportAttached,
+    fcraCtx: { score: ficoStr, scoreDate: ficoPullDate, keyFactors: ficoKeyFactors },
+  });
 
   // -- Send via Resend. --
 
@@ -266,7 +292,7 @@ module.exports = async function handler(req, res) {
   try {
     await monday.postUpdate(itemId,
       renderAuditUpdate({
-        declineReason,
+        declineReason: reasonLabels.join(' + '),
         applicantEmail,
         resendId,
         threaded: !!ackMessageId,
@@ -282,7 +308,7 @@ module.exports = async function handler(req, res) {
     resendId,
     threaded: !!ackMessageId,
     to:       applicantEmail,
-    reason:   declineReason,
+    reasons:  reasonLabels,
   });
 };
 
@@ -309,7 +335,7 @@ function renderAuditUpdate({ declineReason, applicantEmail, resendId, threaded, 
   return [
     `<p><strong>Decline email sent</strong> to ${common.escapeHtml(applicantEmail)}</p>`,
     `<p>Sent at: <strong>${common.escapeHtml(sentAt)}</strong></p>`,
-    `<p>Reason: <strong>${common.escapeHtml(declineReason)}</strong>. From: patti@guavo.com. Threaded: ${threaded ? 'yes' : 'no (fresh email)'}. Resend id: <code>${common.escapeHtml(resendId || 'none')}</code>.</p>`,
+    `<p>Reason: <strong>${common.escapeHtml(declineReason)}</strong>. From: daniel@guavo.com. Threaded: ${threaded ? 'yes' : 'no (fresh email)'}. Resend id: <code>${common.escapeHtml(resendId || 'none')}</code>.</p>`,
     `<details><summary>Rendered HTML (click to expand)</summary>${html}</details>`,
   ].join('');
 }
