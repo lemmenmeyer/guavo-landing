@@ -36,7 +36,7 @@ const monday    = require('../lib/monday-client');
 
 const COL = {
   DECLINE_REASON:        'color_mm5af0yz',
-  DECLINE_REASON_2:      'color_mm5b1w2v',
+  DECLINE_REASON_2:      'color_mm5bm0fh',
   DECLINE_EMAIL_STATUS:  'color_mm5bvnb',
   STAGE:                 'color_mm446jj4',
   EXPERIAN_REPORT:       'file_mm5b2cm7',
