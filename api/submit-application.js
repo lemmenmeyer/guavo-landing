@@ -1,33 +1,43 @@
 // Vercel Serverless Function — POST /api/submit-application
 //
-// Receives an application-form submission from the guavo.com client and
-// sends two emails via Resend:
-//   1. A broker-facing email to apply@guavo.com (or RESEND_TO) with the
-//      application PDF + any uploaded bank statements attached. From apply@
-//      the Google Group forwards to the Monday Pipeline board's "Email to
-//      board" address, which auto-creates an item in the Webpage Pipeline
-//      group with every attachment on the App form file column.
-//   2. An applicant-facing confirmation email to `applicant_email` with only
-//      the application PDF attached. This send is best-effort — if it fails
-//      the request still returns 200 (see applicant_email_status in the
-//      response) so the applicant's success screen isn't blocked by a bad
-//      address or a Resend hiccup.
+// Receives an application-form submission from the guavo.com client and does
+// three things in one round trip:
+//   1. Sends a broker-facing email to apply@guavo.com (or RESEND_TO) via
+//      Resend, with the application PDF + government ID + any bank statements
+//      attached. This is the authoritative record — if it fails, the response
+//      is 502 and the applicant is asked to retry.
+//   2. Creates a Monday item on the Guavo Pipeline board with every business
+//      + owner column pre-populated from the client's pre-split payload, then
+//      uploads the app PDF + ID + bank statements to the corresponding file
+//      columns. Best-effort — if any Monday step fails the request still
+//      returns 200 with monday_status: 'failed' in the response, and the
+//      broker can recover via the /guavo-intake Mode B (Gmail fallback).
+//   3. Sends the applicant a confirmation email with the app PDF attached.
+//      Best-effort — see applicant_email_status in the response.
+//
+// The Monday step deliberately runs AFTER Resend #1 (which gates the response
+// on the broker email arriving) so a Monday outage never prevents Guavo from
+// receiving the application email.
 //
 // Env vars (set these in Vercel → Project → Settings → Environment Variables):
-//   RESEND_API_KEY   — starts with re_..., from resend.com/api-keys
-//   RESEND_FROM      — optional; the "From" address. Defaults to
-//                      "Guavo Applications <contact@guavo.com>", which
-//                      works because guavo.com is verified in Resend. Override
-//                      only if you want a different display name / address.
-//   RESEND_TO        — optional; recipient. Defaults to apply@guavo.com.
-//                      IMPORTANT: if you previously set RESEND_TO to
-//                      contact@guavo.com in Vercel, update it (or unset it)
-//                      so the new apply@ default takes effect.
+//   RESEND_API_KEY    — starts with re_..., from resend.com/api-keys
+//   RESEND_FROM       — optional; the "From" address. Defaults to
+//                       "Guavo Applications <contact@guavo.com>", which
+//                       works because guavo.com is verified in Resend. Override
+//                       only if you want a different display name / address.
+//   RESEND_TO         — optional; recipient. Defaults to apply@guavo.com.
+//                       IMPORTANT: if you previously set RESEND_TO to
+//                       contact@guavo.com in Vercel, update it (or unset it)
+//                       so the new apply@ default takes effect.
+//   MONDAY_API_TOKEN  — Personal API token from staura.monday.com/admin/api-section.
+//                       Missing token → Monday step is skipped and
+//                       monday_status: 'skipped' is returned. This is fine for
+//                       staging; production should always have it set.
 //
 // Client contract (POST body, JSON):
 //   {
 //     to_email:        string,   // recipient — usually apply@guavo.com
-//     applicant_name:  string,
+//     applicant_name:  string,   // composed "First Last" for Resend display
 //     business_name:   string,
 //     applicant_email: string,
 //     amount:          string,   // display-formatted, e.g. "$40,000"
@@ -36,22 +46,54 @@
 //     ref_id:          string,   // e.g. "GVA-ABC12345"
 //     signature:       string,   // typed name
 //     summary:         string,   // plain-text summary body
-//     application_pdf: {
-//       filename: string,
-//       content:  string,   // base64 (no "data:...;base64," prefix)
-//     },
-//     government_id: {          // required
-//       filename: string,
-//       content_type: string,
-//       content: string,        // base64 (no "data:...;base64," prefix)
-//     },
-//     bank_statements: [        // 0..4 entries
-//       { filename, content_type, content }, ...
-//     ]
+//     application_pdf: { filename, content: base64 },
+//     government_id:   { filename, content_type, content: base64 },  // required
+//     bank_statements: [ { filename, content_type, content: base64 }, ... ], // 0..4
+//
+//     // Pre-split structured payload used by the Monday integration.
+//     // Every value comes straight from a discrete form input — no server-
+//     // side name/address parsing.
+//     business:  { legal_name, dba, entity_type, years_in_business, description,
+//                  street, city, state, postal, phone, email },
+//     owner:     { first_name, last_name, dob, ownership_pct, mobile_phone,
+//                  ssn_last4, street, city, state, postal, email },
+//     financing: { amount_requested, use_of_funds, monthly_revenue, notes }
 //   }
 
 const MAX_TOTAL_PAYLOAD_BYTES = 4_400_000; // stay under Vercel's 4.5 MB body cap
 const MAX_ATTACHMENT_BYTES    = 2_500_000; // per-file cap in raw bytes (~2.5 MB)
+
+// Guavo Pipeline board (staura.monday.com workspace 15919104).
+// Column IDs are stable — changing any of these requires a Monday-side rename
+// AND an update here.
+const MONDAY = {
+  API_URL:  'https://api.monday.com/v2',
+  BOARD_ID: '18416816603',
+  GROUP_ID: 'topics', // Active Pipeline group
+  COLUMNS: {
+    business_legal_name: 'text_mm44h259',
+    business_state:      'text_mm444jzb',
+    email:               'email_mm44bhsc',
+    phone:               'phone_mm44x896',
+    funded_amount:       'numeric_mm449dy9',
+    date_received:       'date_mm44a5w2',
+    stage:               'color_mm446jj4',
+    source:              'color_mm4480kw',
+    owner_first_name:    'text_mm5aa5wm',
+    owner_last_name:     'text_mm5aa9t4',
+    owner_dob:           'date_mm5acnen',
+    owner_ssn_last4:     'text_mm5afbjq',
+    owner_home_address:  'text_mm5aj924',
+    owner_city:          'text_mm5aspds',
+    owner_state:         'text_mm5aq8s6',
+    owner_postal:        'text_mm5a9ysn',
+    file_app_form:       'file_mm443rv4',
+    file_id_document:    'file_mm5bh3a6',
+    file_bank_statements:'file_mm5bkba',
+  },
+  STAGE_APP_FORM_LABEL: 'App Form',
+  SOURCE_LABEL:         'App at Website',
+};
 
 module.exports = async function handler(req, res) {
   // CORS + method guards
@@ -80,7 +122,8 @@ module.exports = async function handler(req, res) {
   const {
     to_email, applicant_name, business_name, applicant_email,
     amount, submitted_at, ip_address, ref_id, signature, summary,
-    application_pdf, government_id, bank_statements
+    application_pdf, government_id, bank_statements,
+    business, owner, financing
   } = body;
 
   // Minimal required-field validation
@@ -197,6 +240,74 @@ module.exports = async function handler(req, res) {
 
   const data = await resendResp.json().catch(() => ({}));
 
+  // ── Monday API — create the pipeline item with every column pre-filled,
+  // then upload the app PDF + ID + bank statements to their file columns.
+  // Best-effort: if any Monday call fails we still return 200 (the broker
+  // email is the authoritative record and /guavo-intake Mode B can recover).
+  let monday_status  = 'skipped';
+  let monday_item_id = null;
+  let monday_error   = null;
+  const mondayToken  = process.env.MONDAY_API_TOKEN;
+  if (mondayToken && business && owner) {
+    try {
+      monday_item_id = await mondayCreateItem({
+        token: mondayToken,
+        itemName: `New application — ${business_name} — ${amount}`,
+        business, owner, financing, applicant_email, submitted_at, ref_id,
+      });
+
+      // File uploads run in parallel; the whole batch takes ~= slowest single
+      // upload rather than sum-of-uploads.
+      const uploads = [
+        {
+          columnId: MONDAY.COLUMNS.file_app_form,
+          filename: application_pdf.filename || `Guavo_Application_${ref_id}.pdf`,
+          contentB64: application_pdf.content,
+        },
+        {
+          columnId: MONDAY.COLUMNS.file_id_document,
+          filename: (government_id.filename || 'government_id').replace(/[^a-zA-Z0-9._-]/g, '_'),
+          contentB64: government_id.content,
+        },
+      ];
+      if (Array.isArray(bank_statements)) {
+        const monthLabels = ['most-recent-month', '1mo-prior', '2mo-prior', '3mo-prior'];
+        for (let i = 0; i < Math.min(4, bank_statements.length); i++) {
+          const s = bank_statements[i];
+          if (!s || !s.content) continue;
+          const monthLabel = monthLabels[i] || `stmt${i + 1}`;
+          const rawName = (s.filename || 'bank_statement.pdf').replace(/[^a-zA-Z0-9._-]/g, '_');
+          uploads.push({
+            columnId: MONDAY.COLUMNS.file_bank_statements,
+            filename: `${String(i + 1).padStart(2, '0')}_${monthLabel}_${rawName}`,
+            contentB64: s.content,
+          });
+        }
+      }
+      const uploadResults = await Promise.allSettled(uploads.map(u =>
+        mondayUploadFile({
+          token: mondayToken,
+          itemId: monday_item_id,
+          columnId: u.columnId,
+          filename: u.filename,
+          buffer: Buffer.from(u.contentB64, 'base64'),
+        })
+      ));
+      const failedUploads = uploadResults.filter(r => r.status === 'rejected');
+      if (failedUploads.length > 0) {
+        monday_status = 'partial';
+        monday_error = `Item created (id ${monday_item_id}) but ${failedUploads.length} of ${uploads.length} file uploads failed.`;
+      } else {
+        monday_status = 'ok';
+      }
+    } catch (err) {
+      // Redact SSN Last 4 from any Monday-side error surface. The API rarely
+      // echoes request bodies but the redact call is cheap insurance.
+      monday_status = 'failed';
+      monday_error = redactSensitive(err && err.message ? err.message : String(err), owner);
+    }
+  }
+
   // Applicant-facing confirmation email. Nice-to-have, not required — if it
   // fails we still return 200 so the applicant sees the success screen.
   // The broker copy at contact@guavo.com is the authoritative record.
@@ -249,8 +360,115 @@ module.exports = async function handler(req, res) {
     dropped_statements: droppedStatements,
     applicant_email_status,
     applicant_email_id,
+    monday_status,
+    monday_item_id,
+    monday_error,
   });
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Monday API helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Creates the Pipeline item and populates every column from the pre-split
+// client payload. Returns the new item id.
+async function mondayCreateItem({ token, itemName, business, owner, financing, applicant_email, submitted_at, ref_id }) {
+  const columnValues = {};
+  const set = (colId, val) => { if (val !== undefined && val !== null && val !== '') columnValues[colId] = val; };
+  const s   = (v) => (v == null ? '' : String(v).trim());
+
+  set(MONDAY.COLUMNS.business_legal_name, s(business.legal_name || ''));
+  set(MONDAY.COLUMNS.email,               s(applicant_email || owner.email || business.email || ''));
+  set(MONDAY.COLUMNS.phone,               s(business.phone || owner.mobile_phone || ''));
+  set(MONDAY.COLUMNS.business_state,      s(business.state || '').toUpperCase().slice(0, 2));
+
+  const amountNum = Number(String(financing && financing.amount_requested || '').replace(/[^\d.]/g, ''));
+  if (Number.isFinite(amountNum) && amountNum > 0) set(MONDAY.COLUMNS.funded_amount, amountNum);
+
+  set(MONDAY.COLUMNS.date_received, { date: isoDate(submitted_at) });
+  set(MONDAY.COLUMNS.stage,         { label: MONDAY.STAGE_APP_FORM_LABEL });
+  set(MONDAY.COLUMNS.source,        { label: MONDAY.SOURCE_LABEL });
+
+  set(MONDAY.COLUMNS.owner_first_name,   s(owner.first_name));
+  set(MONDAY.COLUMNS.owner_last_name,    s(owner.last_name));
+  if (owner.dob)         set(MONDAY.COLUMNS.owner_dob, { date: s(owner.dob) });
+  if (owner.ssn_last4)   set(MONDAY.COLUMNS.owner_ssn_last4, s(owner.ssn_last4));
+  set(MONDAY.COLUMNS.owner_home_address, s(owner.street));
+  set(MONDAY.COLUMNS.owner_city,         s(owner.city));
+  set(MONDAY.COLUMNS.owner_state,        s(owner.state).toUpperCase().slice(0, 2));
+  set(MONDAY.COLUMNS.owner_postal,       s(owner.postal));
+
+  const mutation = `mutation ($boardId: ID!, $groupId: String!, $itemName: String!, $columnValues: JSON!) {
+    create_item(board_id: $boardId, group_id: $groupId, item_name: $itemName, column_values: $columnValues) { id }
+  }`;
+  const variables = {
+    boardId: MONDAY.BOARD_ID,
+    groupId: MONDAY.GROUP_ID,
+    itemName,
+    columnValues: JSON.stringify(columnValues),
+  };
+
+  const resp = await fetch(MONDAY.API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': token,
+      'API-Version': '2024-01',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query: mutation, variables }),
+  });
+  const json = await resp.json().catch(() => ({}));
+  if (!resp.ok || json.errors) {
+    const msg = json.errors ? json.errors.map(e => e.message).join('; ') : `HTTP ${resp.status}`;
+    throw new Error(`create_item failed: ${msg}`);
+  }
+  const id = json.data && json.data.create_item && json.data.create_item.id;
+  if (!id) throw new Error('create_item returned no id.');
+  return id;
+}
+
+// Uploads a single Buffer to a file column via Monday's multipart file endpoint.
+// Uses graphql-multipart-request-spec (operations + map + file part).
+async function mondayUploadFile({ token, itemId, columnId, filename, buffer }) {
+  const mutation = `mutation ($file: File!) {
+    add_file_to_column(item_id: ${itemId}, column_id: "${columnId}", file: $file) { id }
+  }`;
+  const form = new FormData();
+  form.append('query', mutation);
+  form.append('variables[file]', new Blob([buffer]), filename);
+
+  const resp = await fetch(MONDAY.API_URL + '/file', {
+    method: 'POST',
+    headers: { 'Authorization': token, 'API-Version': '2024-01' },
+    body: form,
+  });
+  const json = await resp.json().catch(() => ({}));
+  if (!resp.ok || json.errors) {
+    const msg = json.errors ? json.errors.map(e => e.message).join('; ') : `HTTP ${resp.status}`;
+    throw new Error(`add_file_to_column (${columnId}, ${filename}) failed: ${msg}`);
+  }
+  return json.data && json.data.add_file_to_column && json.data.add_file_to_column.id;
+}
+
+// Normalize "July 15, 2026 at 6:23:44 PM EDT" or an ISO string to YYYY-MM-DD
+// for Monday's date column. Falls back to today if the input is unparseable.
+function isoDate(input) {
+  const d = input ? new Date(input) : new Date();
+  if (Number.isNaN(d.getTime())) return new Date().toISOString().slice(0, 10);
+  return d.toISOString().slice(0, 10);
+}
+
+// Strip SSN Last 4 (and only SSN Last 4) from any string that would surface in
+// a response or a log. The token is highly identifiable; other PII is already
+// visible to the ops team on Monday so redacting it here would be theater.
+function redactSensitive(text, owner) {
+  if (!text) return text;
+  const ssn = owner && owner.ssn_last4 ? String(owner.ssn_last4).trim() : '';
+  if (ssn && /^\d{4}$/.test(ssn)) {
+    return String(text).split(ssn).join('****');
+  }
+  return String(text);
+}
 
 // Approximate raw byte count from a base64 string length.
 function approxBase64Bytes(b64) {
