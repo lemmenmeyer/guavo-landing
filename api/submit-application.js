@@ -378,8 +378,13 @@ async function mondayCreateItem({ token, itemName, business, owner, financing, a
   const s   = (v) => (v == null ? '' : String(v).trim());
 
   set(MONDAY.COLUMNS.business_legal_name, s(business.legal_name || ''));
-  set(MONDAY.COLUMNS.email,               s(applicant_email || owner.email || business.email || ''));
-  set(MONDAY.COLUMNS.phone,               s(business.phone || owner.mobile_phone || ''));
+  // Email + phone columns require object-shaped values, not bare strings.
+  // Monday rejects the whole mutation with "invalid value" otherwise, even
+  // though the type hint (JSON) would suggest a string is fine.
+  const em = s(applicant_email || owner.email || business.email || '');
+  if (em) set(MONDAY.COLUMNS.email, { email: em, text: em });
+  const ph = s(business.phone || owner.mobile_phone || '').replace(/[^\d+]/g, '');
+  if (ph) set(MONDAY.COLUMNS.phone, { phone: ph, countryShortName: 'US' });
   set(MONDAY.COLUMNS.business_state,      s(business.state || '').toUpperCase().slice(0, 2));
 
   const amountNum = Number(String(financing && financing.amount_requested || '').replace(/[^\d.]/g, ''));
