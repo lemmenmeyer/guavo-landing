@@ -252,7 +252,10 @@ module.exports = async function handler(req, res) {
     try {
       monday_item_id = await mondayCreateItem({
         token: mondayToken,
-        itemName: `New application — ${business_name} — ${amount}`,
+        // Match the existing Webpage Pipeline convention: the item name is
+        // just the business's legal name (e.g. "Fuego Fino Inc"), not the
+        // longer email-subject format used by the email-to-board recipe.
+        itemName: business_name,
         business, owner, financing, applicant_email, submitted_at, ref_id,
       });
 
