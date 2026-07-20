@@ -69,7 +69,7 @@ const MAX_ATTACHMENT_BYTES    = 2_500_000; // per-file cap in raw bytes (~2.5 MB
 const MONDAY = {
   API_URL:  'https://api.monday.com/v2',
   BOARD_ID: '18416816603',
-  GROUP_ID: 'topics', // Active Pipeline group
+  GROUP_ID: 'group_mm5a2jvy', // Webpage Pipeline — dedicated home for guavo.com webform submissions
   COLUMNS: {
     business_legal_name: 'text_mm44h259',
     business_state:      'text_mm444jzb',
