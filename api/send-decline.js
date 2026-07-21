@@ -1,30 +1,39 @@
 // Vercel Serverless Function — POST /api/send-decline
 //
-// Triggered by a Monday "When button is clicked, send webhook" automation on
-// the Send Decline Email button column of the Guavo Pipeline board.
+// Triggered by a Monday "When Decline Email Status changes to Ready, send
+// webhook" automation on the Guavo Pipeline board. Creates a Gmail DRAFT in
+// daniel@guavo.com's mailbox — never auto-sends — so Daniel reviews every
+// compliance-heavy (FCRA §615(a) etc.) applicant email before it goes out.
 //
 // Flow:
-//   1. Verify the webhook signature (X-Guavo-Webhook-Secret header must match
-//      MONDAY_WEBHOOK_SECRET). Fail closed on mismatch.
-//   2. Handle Monday's URL-verification challenge (echo back the challenge
-//      value on the first webhook registration).
-//   3. Fetch the item via Monday GraphQL.
-//   4. Run every validation gate — decline reason known, Low FICO fields
-//      present if applicable, Business State on the APPROVED_STATES list,
-//      applicant email present, Decline Email Status is Not sent / Ready.
-//      Any failure → post an Update explaining what's missing, DO NOT send,
-//      return 200 (Monday retries 4xx/5xx).
-//   5. Compose the email via the reason-specific template.
-//   6. Send via Resend from daniel@guavo.com. If the item has an
+//   1. Verify webhook signature (?secret= query param or X-Guavo-Webhook-Secret
+//      header). Fail closed on mismatch.
+//   2. Handle Monday's URL-verification challenge on first subscription.
+//   3. Filter — only proceed for events on the Decline Email Status column
+//      with new value = "Ready". All other column changes on the board no-op
+//      silently.
+//   4. Fetch the item via Monday GraphQL.
+//   5. Validation gates — reason mapped, Stage=Declined, applicant email
+//      present, Low FICO fields present when required, Decline Email Status
+//      is a permitted state. Any failure → post an Update explaining, no
+//      draft, return 200.
+//   6. Compose email via reason-specific template.
+//   7. Create Gmail draft in daniel@guavo.com via Gmail API. If item has an
 //      Ack Email Message-ID captured (future-work column), thread the reply.
-//   7. Write Decline Email Status → Sent YYYY-MM-DD and post the rendered
-//      HTML as an audit-trail Update on the item.
+//   8. Write Decline Email Status → Drafted, post audit-trail Update with a
+//      clickable Gmail draft URL + the rendered HTML.
+//
+// Daniel then opens Gmail, reviews the draft, sends it manually, and flips
+// the Monday status to Sent. Manual final send is the human-in-the-loop step.
 //
 // Env vars (Vercel → Project → Settings → Environment Variables):
-//   RESEND_API_KEY          — starts with re_...
-//   MONDAY_API_TOKEN        — personal API v2 token from staura.monday.com
-//   MONDAY_WEBHOOK_SECRET   — arbitrary long secret; the Monday automation
-//                             includes it as an X-Guavo-Webhook-Secret header.
+//   MONDAY_API_TOKEN       — personal API v2 token from staura.monday.com
+//   MONDAY_WEBHOOK_SECRET  — long random string; the Monday automation includes
+//                            it as ?secret=... on the webhook URL.
+//   GMAIL_CLIENT_ID        — Google Cloud OAuth 2.0 Client ID (Desktop app)
+//   GMAIL_CLIENT_SECRET    — from same
+//   GMAIL_REFRESH_TOKEN    — from `node gmail_auth.mjs --email daniel@guavo.com`
+//                            with gmail.modify scope
 //
 // Column IDs on the Guavo Pipeline board (18416816603) — pinned here rather
 // than pulled from env because they never change without an intentional board
@@ -33,6 +42,7 @@
 const templates = require('../lib/decline-templates');
 const common    = require('../lib/decline-templates/common');
 const monday    = require('../lib/monday-client');
+const gmail     = require('../lib/gmail-client');
 
 const COL = {
   DECLINE_REASON:        'color_mm5af0yz',
@@ -62,13 +72,15 @@ const REQUIRED_STAGE = 'Declined';
 const STATUS = {
   NOT_SENT: 'Not sent',
   READY:    'Ready',
+  DRAFTED:  'Drafted',
   SENT:     'Sent',
   BOUNCED:  'Bounced',
   ERROR:    'Error',
 };
 
-// Statuses that permit a send. Anything else (already Sent, Bounced, Error) is
-// treated as "someone/something already handled this" — no-op with an Update.
+// Statuses that permit a new draft. Ready is the primary trigger; Not sent
+// covers manual test invocations; anything downstream (Drafted, Sent, etc.)
+// is treated as "already handled" — no-op with an explanatory Update.
 const SENDABLE_STATUSES = new Set([STATUS.NOT_SENT, STATUS.READY, '', null, undefined]);
 
 const FROM_ADDR   = 'Daniel at Guavo <daniel@guavo.com>';
@@ -241,71 +253,54 @@ module.exports = async function handler(req, res) {
     fcraCtx: { score: ficoStr, scoreDate: ficoPullDate, keyFactors: ficoKeyFactors },
   });
 
-  // -- Send via Resend. --
-
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    await monday.postUpdate(itemId, 'Cannot send decline email: server missing RESEND_API_KEY.').catch(noop);
-    return res.status(500).json({ ok: false, error: 'Email service not configured.' });
-  }
+  // -- Create draft in Gmail. --
 
   // Threading — populate In-Reply-To / References only when we captured the
   // Message-ID at ack time. Older items (or the current period before the
   // submit-application.js companion edit ships) fall through to a fresh
-  // email; the subject stays the same either way so future threading joins
-  // cleanly.
-  const headers = {};
+  // draft; the subject stays the same either way so future threading joins
+  // cleanly once the Ack column starts getting populated.
+  let inReplyTo = null;
+  let references = null;
   if (ackMessageId) {
-    // RFC 5322 Message-IDs are angle-bracket-wrapped. Accept either form on
-    // input; always emit wrapped.
     const wrapped = ackMessageId.startsWith('<') ? ackMessageId : `<${ackMessageId}>`;
-    headers['In-Reply-To'] = wrapped;
-    headers['References']  = wrapped;
+    inReplyTo  = wrapped;
+    references = wrapped;
   }
 
-  let resendId = null;
-  let sendErr  = null;
+  let draftInfo = null;
+  let sendErr   = null;
   try {
-    const payload = {
-      from:     FROM_ADDR,
-      to:       [applicantEmail],
-      reply_to: REPLY_TO,
-      subject:  ackMessageId ? `Re: ${rendered.subject}` : rendered.subject,
-      html:     rendered.html,
-      text:     rendered.text,
-    };
-    if (Object.keys(headers).length > 0) payload.headers = headers;
-
-    const resp = await fetch('https://api.resend.com/emails', {
-      method:  'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+    draftInfo = await gmail.createDraft({
+      from:       FROM_ADDR,
+      to:         applicantEmail,
+      subject:    ackMessageId ? `Re: ${rendered.subject}` : rendered.subject,
+      htmlBody:   rendered.html,
+      textBody:   rendered.text,
+      replyTo:    REPLY_TO,
+      inReplyTo,
+      references,
     });
-    if (!resp.ok) {
-      const errText = await resp.text().catch(() => '');
-      sendErr = `Resend HTTP ${resp.status}: ${errText.slice(0, 500)}`;
-    } else {
-      const data = await resp.json().catch(() => ({}));
-      resendId = data.id || null;
-    }
   } catch (err) {
-    sendErr = `Resend threw: ${err.message || err}`;
+    sendErr = err.message || String(err);
   }
 
   if (sendErr) {
     await monday.updateStatusLabel(itemId, COL.DECLINE_EMAIL_STATUS, STATUS.ERROR).catch(noop);
-    await monday.postUpdate(itemId, `<strong>Decline email failed to send</strong>: ${common.escapeHtml(sendErr)}`).catch(noop);
+    await monday.postUpdate(itemId, `<strong>Decline draft failed to create</strong>: ${common.escapeHtml(sendErr)}`).catch(noop);
     return res.status(502).json({ ok: false, error: sendErr });
   }
 
-  // -- Mark item as sent + write audit trail. --
+  // -- Mark item as Drafted + write audit trail. --
 
   try {
-    await monday.updateStatusLabel(itemId, COL.DECLINE_EMAIL_STATUS, STATUS.SENT);
+    await monday.updateStatusLabel(itemId, COL.DECLINE_EMAIL_STATUS, STATUS.DRAFTED);
   } catch (err) {
-    // Non-fatal — the email already went. Surface the failure in an Update.
+    // Non-fatal — the draft was created. Surface the failure in an Update so
+    // Daniel knows the Monday label didn't flip and he needs to set it
+    // manually after sending from Gmail.
     await monday.postUpdate(itemId,
-      `Sent, but could not update Decline Email Status: ${common.escapeHtml(err.message || String(err))}.`
+      `Draft created, but could not update Decline Email Status to <strong>Drafted</strong>: ${common.escapeHtml(err.message || String(err))}. Set the label manually.`
     ).catch(noop);
   }
 
@@ -314,9 +309,9 @@ module.exports = async function handler(req, res) {
       renderAuditUpdate({
         declineReason: reasonLabels.join(' + '),
         applicantEmail,
-        resendId,
+        draftInfo,
         threaded: !!ackMessageId,
-        sentAt: new Date().toISOString(),
+        draftedAt: new Date().toISOString(),
         html: rendered.html,
       })
     );
@@ -324,8 +319,9 @@ module.exports = async function handler(req, res) {
 
   return res.status(200).json({
     ok:       true,
-    sent:     true,
-    resendId,
+    drafted:  true,
+    draftId:  draftInfo.draftId,
+    draftUrl: draftInfo.draftUrl,
     threaded: !!ackMessageId,
     to:       applicantEmail,
     reasons:  reasonLabels,
@@ -374,11 +370,15 @@ function hasFile(colVal) {
   return false;
 }
 
-function renderAuditUpdate({ declineReason, applicantEmail, resendId, threaded, sentAt, html }) {
+function renderAuditUpdate({ declineReason, applicantEmail, draftInfo, threaded, draftedAt, html }) {
+  const draftUrl  = draftInfo && draftInfo.draftUrl;
+  const draftId   = draftInfo && draftInfo.draftId;
+  const messageId = draftInfo && draftInfo.messageId;
   return [
-    `<p><strong>Decline email sent</strong> to ${common.escapeHtml(applicantEmail)}</p>`,
-    `<p>Sent at: <strong>${common.escapeHtml(sentAt)}</strong></p>`,
-    `<p>Reason: <strong>${common.escapeHtml(declineReason)}</strong>. From: daniel@guavo.com. Threaded: ${threaded ? 'yes' : 'no (fresh email)'}. Resend id: <code>${common.escapeHtml(resendId || 'none')}</code>.</p>`,
+    `<p><strong>Decline draft created</strong> in daniel@guavo.com Gmail for ${common.escapeHtml(applicantEmail)}. Review + send from Gmail; then set Decline Email Status to <strong>Sent</strong>.</p>`,
+    draftUrl ? `<p><a href="${common.escapeHtml(draftUrl)}">Open draft in Gmail →</a></p>` : '',
+    `<p>Drafted at: <strong>${common.escapeHtml(draftedAt)}</strong></p>`,
+    `<p>Reason: <strong>${common.escapeHtml(declineReason)}</strong>. From: daniel@guavo.com. Threaded: ${threaded ? 'yes' : 'no (fresh email)'}. Draft id: <code>${common.escapeHtml(draftId || 'none')}</code>. Message id: <code>${common.escapeHtml(messageId || 'none')}</code>.</p>`,
     `<details><summary>Rendered HTML (click to expand)</summary>${html}</details>`,
-  ].join('');
+  ].filter(Boolean).join('');
 }
