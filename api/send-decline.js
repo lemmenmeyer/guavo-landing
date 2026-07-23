@@ -61,9 +61,11 @@ const COL = {
   BUSINESS_STATE:        'text_mm444jzb',
 };
 
-// Stage label required for a send. Anything else no-ops with an Update so
-// underwriter has to explicitly flip Stage → Declined before the button fires.
-const REQUIRED_STAGE = 'Declined';
+// Stage label required for a send. The decline is drafted while the item is
+// still in Underwriting; Stage moves to Declined only after the email is
+// actually sent (human marks Decline Email Status = Sent, which a Monday
+// automation flips to Stage = Declined). Any other Stage no-ops with an Update.
+const REQUIRED_STAGE = 'Underwriting';
 
 // Status labels the automation writes to Decline Email Status. Must match the
 // labels on the Monday column color_mm5bvnb exactly (case-sensitive). The
@@ -79,9 +81,10 @@ const STATUS = {
 };
 
 // Statuses that permit a new draft. Ready is the primary trigger; Not sent
-// covers manual test invocations; anything downstream (Drafted, Sent, etc.)
-// is treated as "already handled" — no-op with an explanatory Update.
-const SENDABLE_STATUSES = new Set([STATUS.NOT_SENT, STATUS.READY, '', null, undefined]);
+// covers manual test invocations; Error is retryable so a failed attempt can
+// be re-run without a manual reset. Downstream states (Drafted, Sent, Bounced)
+// are treated as "already handled" — no-op with an explanatory Update.
+const SENDABLE_STATUSES = new Set([STATUS.NOT_SENT, STATUS.READY, STATUS.ERROR, '', null, undefined]);
 
 const FROM_ADDR   = 'Daniel at Guavo <daniel@guavo.com>';
 const REPLY_TO    = 'daniel@guavo.com';
