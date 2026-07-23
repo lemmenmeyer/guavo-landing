@@ -89,6 +89,9 @@ const SENDABLE_STATUSES = new Set([STATUS.NOT_SENT, STATUS.READY, STATUS.ERROR, 
 const FROM_ADDR   = 'Daniel at Guavo <daniel@guavo.com>';
 const REPLY_TO    = 'daniel@guavo.com';
 
+// Bumped on each deploy so a Monday Update / response reveals which build ran.
+const BUILD_TAG   = 'boardid-fix-2026-07-23';
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -290,8 +293,8 @@ module.exports = async function handler(req, res) {
 
   if (sendErr) {
     await monday.updateStatusLabel(itemId, COL.DECLINE_EMAIL_STATUS, STATUS.ERROR).catch(noop);
-    await monday.postUpdate(itemId, `<strong>Decline draft failed to create</strong>: ${common.escapeHtml(sendErr)}`).catch(noop);
-    return res.status(502).json({ ok: false, error: sendErr });
+    await monday.postUpdate(itemId, `<strong>Decline draft failed to create</strong> [${BUILD_TAG}]: ${common.escapeHtml(sendErr)}`).catch(noop);
+    return res.status(502).json({ ok: false, error: sendErr, build: BUILD_TAG });
   }
 
   // -- Mark item as Drafted + write audit trail. --
