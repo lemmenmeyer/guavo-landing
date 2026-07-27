@@ -1001,6 +1001,27 @@ function calcQual(){
   return Math.round(Math.min(fund, revenueMax) / 1000) * 1000;
 }
 
+// ── Funnel analytics ─────────────────────────────────────────────────
+// Lightweight GA4 events so we can see WHERE applicants drop off in the
+// multi-step form. Every event carries ZERO PII — only step markers, never
+// field values. Consent Mode still applies: gtag sends cookieless pings for
+// non-consenters and full events for those who accept, exactly like
+// generate_lead. Build the funnel in GA4 Explore:
+//   form_start (auto) → app_step_owner → app_step_financing
+//   → app_id_selected → app_submit_attempt → generate_lead
+function track(name, params){
+  if (typeof gtag !== 'function') return;
+  gtag('event', name, params || {});
+}
+// Fire an event at most once per page load, so bouncing back/forward through
+// the steps doesn't inflate the counts.
+const _firedFunnelEvents = new Set();
+function trackOnce(name, params){
+  if (_firedFunnelEvents.has(name)) return;
+  _firedFunnelEvents.add(name);
+  track(name, params);
+}
+
 function startQual(){
   const btn = document.getElementById('qualBtn');
   const arrow = document.getElementById('qualArrow');
@@ -1029,6 +1050,9 @@ function startQual(){
     // Show result
     result.classList.add('show');
     result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Funnel: visitor engaged the instant-qualifier and saw an estimate.
+    trackOnce('qualifier_submit', { value: amount, currency: 'USD' });
   }, 2200);
 }
 
@@ -1044,6 +1068,10 @@ document.querySelectorAll('.filepick-input').forEach(function(input){
     if (input.files && input.files[0]) {
       nameEl.textContent = input.files[0].name;
       nameEl.classList.add('has-file');
+      // Funnel: which required document the applicant actually attached.
+      // Filename is NOT sent — only that an upload happened for this slot.
+      if (input.id === 'f_govid') trackOnce('app_id_selected');
+      else if (/^f_stmt_/.test(input.id)) trackOnce('app_statement_selected');
     } else {
       nameEl.textContent = 'No file selected';
       nameEl.classList.remove('has-file');
@@ -1064,6 +1092,13 @@ function goStep(n){
   }
   document.getElementById('fst'+n).classList.add('active');
   document.getElementById('fp'+n).classList.add('active');
+
+  // Funnel: applicant reached a later step. Pairs with form_start (step 1,
+  // auto) so GA4 shows the drop-off at Owner (SSN/DOB) and Financing (ID/
+  // bank statements/signature) — the steps we suspect cost completions.
+  if (n === 2) trackOnce('app_step_owner');
+  else if (n === 3) trackOnce('app_step_financing');
+
   document.getElementById('apply').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -1083,6 +1118,11 @@ function composeAddress(streetId, cityId, stateId, postalId){
 
 async function submitForm(e){
   e.preventDefault();
+
+  // Funnel: applicant clicked Submit. Fires before validation/backend, so
+  // comparing this against generate_lead (success) also surfaces failed or
+  // abandoned submits, not just the ones that completed.
+  track('app_submit_attempt');
 
   // Validate signature
   const sig = g('f_esig').trim();
