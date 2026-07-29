@@ -33,6 +33,16 @@
 //                       Missing token → Monday step is skipped and
 //                       monday_status: 'skipped' is returned. This is fine for
 //                       staging; production should always have it set.
+//   SUPABASE_URL      — https://<project-ref>.supabase.co. When set alongside
+//                       SUPABASE_SERVICE_KEY, the request also upserts applicant
+//                       + owner + deal into Postgres (cross-referenced by
+//                       monday_item_id). During the trial Monday remains the
+//                       CRM surface; Postgres is the source of truth for
+//                       downstream contract generation. Missing either var →
+//                       postgres_status: 'skipped'.
+//   SUPABASE_SERVICE_KEY
+//                     — service_role key for the Supabase project. Bypasses
+//                       RLS. Server-side only; NEVER expose to the browser.
 //
 // Client contract (POST body, JSON):
 //   {
@@ -214,7 +224,7 @@ module.exports = async function handler(req, res) {
   const droppedNote = droppedStatements.length > 0
     ? `\n\n⚠ WARNING: ${droppedStatements.length} bank statement(s) arrived empty and were not attached: ${droppedStatements.map(d => `slot ${d.slot} (${d.filename})`).join(', ')}. Ask the applicant to re-upload.\n`
     : '';
-  const text = summary + droppedNote + '\n\nReply directly to this email to reach the applicant.\n';
+  const text = summary + droppedNote + '\n';
 
   const resendResp = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -311,6 +321,32 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  // ── Postgres (Supabase) dual-write. Only fires when Monday created cleanly,
+  // so we always have a monday_item_id to link on. Best-effort; failure
+  // reported as postgres_status='failed' but the request still returns 200.
+  let postgres_status  = 'skipped';
+  let postgres_error   = null;
+  let postgres_deal_id = null;
+  const supaUrl = process.env.SUPABASE_URL;
+  const supaKey = process.env.SUPABASE_SERVICE_KEY;
+  if (supaUrl && supaKey && monday_status === 'ok' && monday_item_id && business) {
+    try {
+      const result = await supabaseUpsertApplication({
+        url: supaUrl, key: supaKey,
+        business, owner, financing,
+        applicant_email, submitted_at,
+        monday_item_id,
+      });
+      postgres_status  = 'ok';
+      postgres_deal_id = result.deal_id;
+    } catch (err) {
+      postgres_status = 'failed';
+      postgres_error  = redactSensitive(err && err.message ? err.message : String(err), owner);
+    }
+  } else if (supaUrl && supaKey && monday_status !== 'ok') {
+    postgres_status = 'skipped_monday_failed';
+  }
+
   // Applicant-facing confirmation email. Nice-to-have, not required — if it
   // fails we still return 200 so the applicant sees the success screen.
   // The broker copy at contact@guavo.com is the authoritative record.
@@ -366,6 +402,9 @@ module.exports = async function handler(req, res) {
     monday_status,
     monday_item_id,
     monday_error,
+    postgres_status,
+    postgres_deal_id,
+    postgres_error,
   });
 };
 
@@ -466,6 +505,114 @@ function isoDate(input) {
   return d.toISOString().slice(0, 10);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Supabase / Postgres helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Upserts applicant + deal (keyed on monday_item_id) and inserts the primary
+// owner. Returns { deal_id }. Throws on any Postgres error — caller decides
+// whether to surface as failed vs. bail the whole request.
+async function supabaseUpsertApplication({ url, key, business, owner, financing, applicant_email, submitted_at, monday_item_id }) {
+  const base = url.replace(/\/+$/, '') + '/rest/v1';
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+    'Content-Type': 'application/json',
+    Prefer: 'resolution=merge-duplicates,return=representation',
+  };
+
+  const s = (v) => (v == null ? null : String(v).trim() || null);
+  const st = (v) => { const up = s(v); return up && /^[A-Za-z]{2}$/.test(up) ? up.toUpperCase() : null; };
+  const num = (v) => { if (v == null || v === '') return null; const n = Number(String(v).replace(/[^\d.-]/g, '')); return Number.isFinite(n) ? n : null; };
+  const entityType = (v) => {
+    const m = { LLC: 'LLC', Corporation: 'Corporation', Corp: 'Corporation', Inc: 'Corporation',
+                'S-Corp': 'S-Corp', 'S Corp': 'S-Corp', Partnership: 'Partnership',
+                'Sole Proprietorship': 'Sole Proprietorship', 'Sole Prop': 'Sole Proprietorship' };
+    return m[s(v)] ?? null;
+  };
+
+  // 1. Upsert applicant
+  const applicantBody = [{
+    monday_item_id: Number(monday_item_id),
+    business_legal_name: s(business.legal_name) || 'UNKNOWN',
+    dba: s(business.dba),
+    entity_type: entityType(business.entity_type),
+    ein: s(business.ein),
+    state_of_formation: st(business.state_of_formation) || st(business.state),
+    business_street: s(business.street),
+    business_city: s(business.city),
+    business_state: st(business.state),
+    business_postal_code: s(business.postal),
+    business_phone: s(business.phone),
+    business_email: s(business.email || applicant_email),
+    years_in_business_bucket: s(business.years_in_business),
+    business_description: s(business.description),
+    use_of_funds: financing ? s(financing.use_of_funds) : null,
+    monthly_revenue_self_reported: financing ? num(financing.monthly_revenue) : null,
+    application_notes: financing ? s(financing.notes) : null,
+  }];
+
+  const appResp = await fetch(`${base}/applicants?on_conflict=monday_item_id`, {
+    method: 'POST', headers, body: JSON.stringify(applicantBody),
+  });
+  if (!appResp.ok) throw new Error(`applicants upsert failed: HTTP ${appResp.status} — ${(await appResp.text()).slice(0, 300)}`);
+  const applicantRow = (await appResp.json())[0];
+  const applicant_id = applicantRow.id;
+
+  // 2. Upsert deal (also keyed on monday_item_id)
+  const dealBody = [{
+    applicant_id,
+    monday_item_id: Number(monday_item_id),
+    stage: 'App Form',
+    source: 'App at Website',
+    date_received: isoDate(submitted_at),
+    funded_amount_requested: financing ? num(financing.amount_requested) : null,
+    lookback_months: 3,
+    governing_law_state: 'FL',
+  }];
+
+  const dealResp = await fetch(`${base}/deals?on_conflict=monday_item_id`, {
+    method: 'POST', headers, body: JSON.stringify(dealBody),
+  });
+  if (!dealResp.ok) throw new Error(`deals upsert failed: HTTP ${dealResp.status} — ${(await dealResp.text()).slice(0, 300)}`);
+  const dealRow = (await dealResp.json())[0];
+  const deal_id = dealRow.id;
+
+  // 3. Insert primary owner if applicant supplied owner data. During dual-write
+  // trial, replace-primary: delete existing primary + insert fresh. This is
+  // race-safe here because each POST is one applicant.
+  if (owner && (owner.first_name || owner.last_name)) {
+    // Delete any existing primary owner for this applicant
+    await fetch(`${base}/owners?applicant_id=eq.${applicant_id}&is_primary=eq.true`, {
+      method: 'DELETE', headers,
+    });
+    const ownerBody = [{
+      applicant_id,
+      is_primary: true,
+      is_guarantor: true,
+      first_name: s(owner.first_name),
+      last_name: s(owner.last_name),
+      full_legal_name: [s(owner.first_name), s(owner.last_name)].filter(Boolean).join(' ') || null,
+      title: (['Owner','Manager','Managing Member','President','CEO','Sole Proprietor'].includes(s(owner.title))) ? s(owner.title) : null,
+      ownership_pct: num(owner.ownership_pct),
+      dob: s(owner.dob),
+      ssn_last4: s(owner.ssn_last4),
+      home_street: s(owner.street),
+      home_city: s(owner.city),
+      home_state: st(owner.state),
+      home_postal_code: s(owner.postal),
+      phone: s(owner.mobile_phone),
+      email: s(owner.email || applicant_email),
+    }];
+    const ownerResp = await fetch(`${base}/owners`, {
+      method: 'POST', headers: { ...headers, Prefer: 'return=representation' }, body: JSON.stringify(ownerBody),
+    });
+    if (!ownerResp.ok) throw new Error(`owners insert failed: HTTP ${ownerResp.status} — ${(await ownerResp.text()).slice(0, 300)}`);
+  }
+
+  return { applicant_id, deal_id };
+}
+
 // Strip SSN Last 4 (and only SSN Last 4) from any string that would surface in
 // a response or a log. The token is highly identifiable; other PII is already
 // visible to the ops team on Monday so redacting it here would be theater.
@@ -513,10 +660,9 @@ function renderHtmlBody({ applicant_name, business_name, applicant_email, amount
     <tr><td style="padding:6px 0;color:#6B6358;">Electronic Signature</td><td style="padding:6px 0;">${esc(signature)}</td></tr>
   </table>
   <p style="font-size:13px;color:#003724;background:#F2EDE5;padding:12px 14px;border-radius:4px;margin:0 0 20px;">
-    <strong>Attached:</strong> Full signed application PDF, government-issued photo ID${statementCount > 0 ? `, plus ${statementCount} bank statement${statementCount === 1 ? '' : 's'}` : ''}. Forward this email directly to brokers/banks — the PDF carries through cleanly.
+    <strong>Attached:</strong> Full signed application PDF, government-issued photo ID${statementCount > 0 ? `, plus ${statementCount} bank statement${statementCount === 1 ? '' : 's'}` : ''}.
   </p>
   <pre style="font-family:Consolas,Monaco,'Courier New',monospace;font-size:12px;background:#FAF8F4;padding:14px;border-radius:4px;white-space:pre-wrap;color:#1a1a16;border:1px solid #D4CCBF;">${esc(summary)}</pre>
-  <p style="font-size:12px;color:#6B6358;margin-top:20px;">Reply directly to this email to reach the applicant.</p>
   <hr style="border:none;border-top:1px solid #D4CCBF;margin:20px 0;">
   <p style="font-size:11px;color:#6B6358;margin:0;">Guavo Inc. &nbsp;|&nbsp; contact@guavo.com &nbsp;|&nbsp; (714) 400-2237 &nbsp;|&nbsp; Miami, FL</p>
 </body></html>`;
