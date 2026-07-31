@@ -396,6 +396,15 @@ input[type=range]{
   padding:13px 15px;
   font-size:11.5px;color:var(--mu);line-height:1.65;
 }
+.consent-check{
+  display:flex;align-items:flex-start;gap:10px;
+  margin-top:12px;padding-top:11px;border-top:1px solid var(--bd);
+  cursor:pointer;font-size:12px;color:var(--tx);font-weight:600;line-height:1.5;
+}
+.consent-check input{
+  margin-top:1px;width:17px;height:17px;flex:none;
+  accent-color:var(--g);cursor:pointer;
+}
 
 .fsub{margin-top:24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
 .bback{color:var(--mu);font-size:14px;font-weight:500;text-decoration:none;border-bottom:1.5px solid var(--bd);padding-bottom:1px;transition:opacity .2s;background:none;border-top:none;border-left:none;border-right:none;cursor:pointer;font-family:var(--fb);}
@@ -904,12 +913,23 @@ input[type=range]:focus-visible + .slider-thumb,
           </div>
         </div>
 
-        <!-- ESIGN + Combined Consent -->
+        <!-- Soft credit pull consent (FCRA written instructions) -->
         <div class="consent" style="margin-top:20px;font-size:11.5px;line-height:1.7;">
+          <strong style="display:block;margin-bottom:6px;font-size:12px;color:var(--g);">Credit Profile Authorization (Fair Credit Reporting Act)</strong>
+          <span style="display:block;margin-bottom:8px;font-size:12px;font-weight:700;color:var(--g);">This is a soft credit pull (does not impact credit score).</span>
+          You understand that by checking the <strong>I AGREE</strong> box below, you are providing "written instructions" to Guavo Inc. and its funding partners under the Fair Credit Reporting Act, authorizing Guavo Inc. and its funding partners to obtain information from your personal credit profile or other information from one or more consumer reporting agencies (such as Experian, Equifax, and/or TransUnion). You authorize Guavo Inc. and its funding partners to obtain such information solely to conduct a pre-qualification for credit.
+          <label class="consent-check" for="f_softpull">
+            <input id="f_softpull" type="checkbox" required>
+            <span><strong>I AGREE</strong> to the credit profile authorization above.</span>
+          </label>
+        </div>
+
+        <!-- ESIGN + Combined Consent -->
+        <div class="consent" style="margin-top:16px;font-size:11.5px;line-height:1.7;">
           <strong style="display:block;margin-bottom:6px;font-size:12px;color:var(--g);">Electronic Signature Disclosure &amp; Consent (ESIGN Act)</strong>
           By typing your full legal name below and clicking Submit, you are signing this application electronically. You agree that your electronic signature is the legal equivalent of a manual signature and is binding under the federal Electronic Signatures in Global and National Commerce Act (ESIGN, 15 U.S.C. § 7001) and applicable state law. You have the right to receive this application in paper form — to request a paper copy, email contact@guavo.com. You may withdraw this consent at any time prior to submission.
           <br><br>
-          You also expressly: (1) authorize Guavo Inc. to obtain consumer and business credit reports for commercial financing evaluation (soft pull only — a hard pull requires separate acknowledgment); (2) consent to be contacted by Guavo Inc. at the phone number and email provided, including via calls, texts, and automated methods, even if listed on a Do Not Call registry (opt out anytime by replying STOP or emailing contact@guavo.com); and (3) certify that all information provided in this application is true and accurate to the best of your knowledge.
+          You also expressly: (1) consent to be contacted by Guavo Inc. and its funding partners at the phone number and email provided, including via calls, texts, and automated methods, even if listed on a Do Not Call registry (opt out anytime by replying STOP or emailing contact@guavo.com); (2) authorize Guavo Inc. to share this application with its funding partners; and (3) certify that all information provided in this application is true and accurate to the best of your knowledge.
         </div>
 
         <div class="ff full" style="margin-top:16px;">
@@ -1124,6 +1144,10 @@ async function submitForm(e){
   // abandoned submits, not just the ones that completed.
   track('app_submit_attempt');
 
+  // Validate soft-pull credit authorization (FCRA written instructions)
+  const softPull = document.getElementById('f_softpull');
+  if(!softPull.checked){ alert('Please check the I AGREE box to authorize the soft credit pull.'); softPull.focus(); return; }
+
   // Validate signature
   const sig = g('f_esig').trim();
   if(!sig){ alert('Please type your full legal name as your electronic signature.'); return; }
@@ -1276,7 +1300,7 @@ async function submitForm(e){
     drawRow('Additional Notes', g('f_notes') || 'None provided');
 
     // ── SIGNATURE BLOCK ──────────────────────────────────────
-    const consentText = 'By electronically signing below, the applicant certifies under penalty of law that: (1) all information provided in this application is true and accurate; (2) they authorize Guavo Inc. to obtain consumer and business credit reports for commercial financing evaluation (soft pull — hard pull requires separate acknowledgment); (3) they consent to be contacted by Guavo Inc. via calls, texts, and emails including automated methods, even if listed on a Do Not Call registry (opt out by replying STOP); and (4) they agree this electronic signature constitutes a legally binding signature under the federal ESIGN Act (15 U.S.C. § 7001) and applicable state law (UETA). Paper copies available upon request at contact@guavo.com.';
+    const consentText = 'By checking the "I AGREE" box, the applicant provided "written instructions" to Guavo Inc. and its funding partners under the Fair Credit Reporting Act, authorizing them to obtain information from the applicant\'s personal credit profile or other information from one or more consumer reporting agencies (such as Experian, Equifax, and/or TransUnion) solely to conduct a pre-qualification for credit. By electronically signing below, the applicant further certifies under penalty of law that: (1) all information provided in this application is true and accurate; (2) they consent to be contacted by Guavo Inc. and its funding partners via calls, texts, and emails including automated methods, even if listed on a Do Not Call registry (opt out by replying STOP); (3) they authorize Guavo Inc. to share this application with its funding partners; and (4) they agree this electronic signature constitutes a legally binding signature under the federal ESIGN Act (15 U.S.C. § 7001) and applicable state law (UETA). Paper copies available upon request at contact@guavo.com.';
     doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
     const cLines = doc.splitTextToSize(consentText, TW - 20);
     const sigBlockH = 30 + cLines.length * 11 + 20 + 36 + 28;
@@ -1370,9 +1394,14 @@ async function submitForm(e){
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
       'CONSENTS CONFIRMED',
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-      'Applicant electronically signed all four required consents',
-      '(TCPA contact, credit pull authorization, ESIGN electronic',
-      'signature, accuracy certification).',
+      'Soft credit pull (I AGREE box) : CHECKED',
+      '  FCRA written instructions to Guavo Inc. and funding',
+      '  partners, for pre-qualification only.',
+      'Applicant also electronically signed the ESIGN consents',
+      '(TCPA contact by Guavo Inc. and its funding partners,',
+      'authorization to share the application with funding',
+      'partners, ESIGN electronic signature, accuracy',
+      'certification).',
       '',
       'Full consent language and signed record: see attached PDF.',
       '',
