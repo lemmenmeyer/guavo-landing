@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Guavo: Revenue-Based Financing for Small Businesses</title>
 <meta name="description" content="Guavo provides revenue-based financing to US small businesses. From $10K to $100K, funded in 24 hours. Payments scale to your weekly revenue.">
+<link rel="canonical" href="https://www.guavo.com/">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
 
 <!-- Favicon -->
 <link rel="icon" href="/assets/brand/guavo-icon.svg" type="image/svg+xml">
@@ -13,10 +15,10 @@
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://guavo.com/">
+<meta property="og:url" content="https://www.guavo.com/">
 <meta property="og:title" content="Guavo: Revenue-Based Financing for Small Businesses">
 <meta property="og:description" content="Guavo provides revenue-based financing to US small businesses. From $10K to $100K, funded in 24 hours. Payments scale to your weekly revenue.">
-<meta property="og:image" content="https://guavo.com/assets/brand/og-image.png">
+<meta property="og:image" content="https://www.guavo.com/assets/brand/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:site_name" content="Guavo">
@@ -25,8 +27,85 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Guavo: Revenue-Based Financing for Small Businesses">
 <meta name="twitter:description" content="Guavo provides revenue-based financing to US small businesses. From $10K to $100K, funded in 24 hours. Payments scale to your weekly revenue.">
-<meta name="twitter:image" content="https://guavo.com/assets/brand/og-image.png">
+<meta name="twitter:image" content="https://www.guavo.com/assets/brand/og-image.png">
 
+<!-- Structured data. Resolves "Guavo" to Guavo Inc. (financing) rather than the
+     other companies sharing the name. Keep every value here identical to what is
+     rendered in the footer — mismatched NAP weakens entity resolution. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["Organization", "FinancialService"],
+      "@id": "https://www.guavo.com/#organization",
+      "name": "Guavo",
+      "legalName": "Guavo Inc.",
+      "url": "https://www.guavo.com/",
+      "description": "Guavo Inc. provides revenue-based financing to United States small businesses, from $10,000 to $100,000, with repayment collected as a percentage of weekly revenue.",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.guavo.com/assets/brand/guavo-logo-horizontal-2048.png"
+      },
+      "image": "https://www.guavo.com/assets/brand/og-image.png",
+      "email": "contact@guavo.com",
+      "telephone": "+1-714-400-2237",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "2665 S Bayshore Drive, Suite 1020",
+        "addressLocality": "Miami",
+        "addressRegion": "FL",
+        "postalCode": "33133",
+        "addressCountry": "US"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "telephone": "+1-714-400-2237",
+        "email": "contact@guavo.com",
+        "areaServed": "US",
+        "availableLanguage": ["en"]
+      },
+      "areaServed": {
+        "@type": "Country",
+        "name": "United States"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/company/guavocom"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://www.guavo.com/#website",
+      "url": "https://www.guavo.com/",
+      "name": "Guavo",
+      "publisher": { "@id": "https://www.guavo.com/#organization" },
+      "inLanguage": "en-US"
+    },
+    {
+      "@type": "Service",
+      "@id": "https://www.guavo.com/#service",
+      "name": "Revenue-Based Financing",
+      "serviceType": "Revenue-based financing for small businesses",
+      "description": "Financing from $10,000 to $100,000 for United States small businesses. Repayment is collected as a fixed percentage of weekly deposits, so payments fall when revenue falls. Funds are disbursed within 24 hours of approval.",
+      "provider": { "@id": "https://www.guavo.com/#organization" },
+      "areaServed": {
+        "@type": "Country",
+        "name": "United States"
+      },
+      "offers": {
+        "@type": "Offer",
+        "priceSpecification": {
+          "@type": "PriceSpecification",
+          "minPrice": 10000,
+          "maxPrice": 100000,
+          "priceCurrency": "USD"
+        }
+      }
+    }
+  ]
+}
+</script>
 
 <!-- Google Analytics 4 with Consent Mode v2 (loaded default-denied) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-X0GRGG40QF"></script>
@@ -51,13 +130,10 @@
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>
-  // Initialize EmailJS — replace with your actual public key after setup
-  (function(){ emailjs.init({ publicKey: 'M2HP57VXRrBL8OrsG' }); })();
-</script>
+<!-- jsPDF is loaded on demand by ensureJsPDF() — it is only needed at form submit,
+     so keeping it out of the critical path saves ~350KB on every pageview. -->
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -965,7 +1041,7 @@ input[type=range]:focus-visible + .slider-thumb,
   <div class="fi">
     <div>
 
-      <p class="fabout">Guavo Inc. provides revenue-based financing to small businesses. Based in Miami, FL.</p>
+      <p class="fabout">Guavo Inc. provides revenue-based financing to small businesses. 2665 S Bayshore Drive, Suite 1020, Miami, FL 33133.</p>
     </div>
     <div class="fcol">
       <h3>Company</h3>
@@ -982,7 +1058,7 @@ input[type=range]:focus-visible + .slider-thumb,
     </div>
   </div>
   <div class="fbot">
-    <span>© 2025 Guavo Inc. All rights reserved.</span>
+    <span>© 2026 Guavo Inc. All rights reserved.</span>
     <span>
       <a href="/privacy.html" style="color:rgba(255,255,255,.75);text-decoration:none;">Privacy</a>
       &nbsp;·&nbsp;
@@ -996,6 +1072,38 @@ input[type=range]:focus-visible + .slider-thumb,
 </footer>
 
 <script>
+// JSPDF — loaded on demand instead of in <head>. The library is ~350KB and is
+// only used to build the application PDF at submit, so every visitor who never
+// applies used to pay for it. Idempotent: repeat calls reuse the same promise.
+// Warmed on first form interaction, awaited at submit.
+let _jsPDFPromise = null;
+function ensureJsPDF(){
+  if (window.jspdf) return Promise.resolve();
+  if (_jsPDFPromise) return _jsPDFPromise;
+  _jsPDFPromise = new Promise(function(resolve, reject){
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.onload = resolve;
+    // This message reaches the applicant via the alert() in submitForm's catch,
+    // so keep it plain-language rather than a developer string.
+    s.onerror = function(){
+      _jsPDFPromise = null;
+      reject(new Error('We could not finish preparing your application. Please check your connection and try again, or email contact@guavo.com.'));
+    };
+    document.head.appendChild(s);
+  });
+  return _jsPDFPromise;
+}
+// Warm the library as soon as the visitor touches the form, so it is almost
+// always cached by the time they submit.
+document.addEventListener('DOMContentLoaded', function(){
+  const form = document.getElementById('applyForm');
+  if (!form) return;
+  const warm = function(){ ensureJsPDF().catch(function(){}); };
+  form.addEventListener('focusin', warm, { once: true });
+  form.addEventListener('input', warm, { once: true });
+});
+
 // SLIDERS
 function fmt(n){return '$'+n.toLocaleString();}
 
@@ -1170,7 +1278,8 @@ async function submitForm(e){
       ipAddress = ipData.ip;
     } catch(ipErr){ ipAddress = 'unavailable'; }
 
-    // Build PDF using jsPDF
+    // Build PDF using jsPDF (loaded on demand — see ensureJsPDF above)
+    await ensureJsPDF();
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit:'pt', format:'letter' });
     const PW = 612, PH = 792, ML = 48, MR = 48, TW = PW - ML - MR;

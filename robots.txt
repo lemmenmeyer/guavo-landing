@@ -1,0 +1,27 @@
+# robots.txt — guavo.com (Guavo Inc.)
+# Revenue-based financing for US small businesses.
+# Canonical host: https://www.guavo.com
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Answer-engine and AI crawlers are intentionally ALLOWED.
+# These grant grounding rights to ChatGPT, Claude, Perplexity, Gemini and
+# Google AI Overviews. Do not block them without a deliberate decision:
+# blocking removes Guavo from AI-generated answers entirely.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: cohere-ai
+Allow: /
+Disallow: /api/
+
+Sitemap: https://www.guavo.com/sitemap.xml
