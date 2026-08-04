@@ -1466,8 +1466,6 @@ async function submitForm(e){
       doc.text('Page ' + p + ' of ' + totalPages, PW - MR, FOOTER_Y + 18, {align:'right'});
     }
 
-    const pdfB64 = doc.output('datauristring');
-
     const fullSummary = [
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
       'BUSINESS INFORMATION',
