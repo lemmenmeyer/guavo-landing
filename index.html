@@ -395,12 +395,23 @@ input[type=range]{
 /* Pre-application FAQ */
 .fqs{background:var(--wm);border-top:1px solid var(--wd);}
 .fqs-in{max-width:var(--mx);margin:0 auto;padding:88px 40px;}
-.fqs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
-.fqc{background:var(--cr);border:1px solid var(--wd);border-radius:var(--r);padding:26px 28px;position:relative;overflow:hidden;}
+.fqs-hint{font-size:14px;color:var(--mu);font-weight:300;margin-bottom:34px;}
+.fqs-hint img{vertical-align:-4px;opacity:.85;margin:0 3px;}
+.fqs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;align-items:start;}
+.fqc{background:var(--cr);border:1px solid var(--wd);border-radius:var(--r);position:relative;overflow:hidden;transition:border-color .18s ease;}
 .fqc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--o);opacity:0;transition:opacity .18s ease;}
-.fqc:hover::before{opacity:1;}
-.fqc h3{font-family:var(--fd);font-size:19px;font-weight:700;color:var(--g);line-height:1.3;margin-bottom:9px;}
-.fqc p{font-size:15px;color:var(--mu);line-height:1.7;font-weight:300;}
+.fqc[open]::before,.fqc:hover::before{opacity:1;}
+.fqc[open]{border-color:var(--bd);}
+/* Native disclosure: no JS, keyboard accessible, and the answer stays in the
+   DOM when collapsed so crawlers still read it. */
+.fqc summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 26px;}
+.fqc summary::-webkit-details-marker{display:none;}
+.fqc-q{font-family:var(--fd);font-size:18.5px;font-weight:700;color:var(--g);line-height:1.32;}
+.fqc-ico{flex:0 0 auto;width:40px;height:40px;border-radius:50%;background:var(--wm);border:1px solid var(--wd);display:flex;align-items:center;justify-content:center;transition:transform .2s ease,background .2s ease,border-color .2s ease;}
+.fqc-ico img{display:block;}
+.fqc summary:hover .fqc-ico{background:var(--wh);border-color:var(--o);transform:scale(1.08);}
+.fqc[open] .fqc-ico{background:var(--wh);border-color:var(--o);transform:scale(1.12);}
+.fqc p{font-size:15px;color:var(--mu);line-height:1.7;font-weight:300;padding:0 26px 24px;margin-top:-4px;}
 .fqs-more{display:inline-block;margin-top:32px;font-size:15px;font-weight:600;color:var(--gm);text-decoration:none;border-bottom:1.5px solid var(--o);padding-bottom:2px;}
 .fqs-more:hover{color:var(--g);border-bottom-color:var(--oa);}
 .acard{
@@ -552,7 +563,10 @@ footer{background:var(--g);padding:52px 40px 30px;}
 @media(max-width:640px){
   .asec{padding:60px 16px;}
   .fqs-in{padding:60px 20px;}
-  .fqc{padding:22px 22px;}
+  .fqc summary{padding:20px 18px;gap:12px;}
+  .fqc-q{font-size:16.5px;}
+  .fqc-ico{width:36px;height:36px;}
+  .fqc p{padding:0 18px 20px;}
   .acard{padding:32px 20px;}
   .fsteps{align-items:flex-start;margin-bottom:26px;}
   .fstep{flex-direction:column;gap:6px;text-align:center;font-size:10.5px;letter-spacing:.3px;flex:0 1 auto;min-width:0;}
@@ -1059,25 +1073,26 @@ input[type=range]:focus-visible + .slider-thumb,
 <section id="faq-quick" class="fqs">
   <div class="fqs-in">
     <div class="sec-ey">Before you apply</div>
-    <h2 class="sec-h" style="margin-bottom:36px;">Questions we get most</h2>
+    <h2 class="sec-h" style="margin-bottom:10px;">Questions we get most</h2>
+    <p class="fqs-hint">Tap the <img src="/assets/brand/guavo-icon.svg" alt="Guavo" width="18" height="18"> to see each answer</p>
 
     <div class="fqs-grid">
-      <div class="fqc">
-        <h3>Does applying affect my credit score?</h3>
+      <details class="fqc">
+        <summary><span class="fqc-q">Does applying affect my credit score?</span><span class="fqc-ico"><img src="/assets/brand/guavo-icon.svg" alt="" width="24" height="24"></span></summary>
         <p>No. We do a soft credit pull only, with no impact on your score, and it is not visible to other lenders as an inquiry.</p>
-      </div>
-      <div class="fqc">
-        <h3>What do I need to get my offer?</h3>
+      </details>
+      <details class="fqc">
+        <summary><span class="fqc-q">What do I need to get my offer?</span><span class="fqc-ico"><img src="/assets/brand/guavo-icon.svg" alt="" width="24" height="24"></span></summary>
         <p>Your completed application, a valid government-issued ID, and your last 4 business bank statements. The statements are what determine your offer, so having them ready is the difference between an answer today and an answer next week.</p>
-      </div>
-      <div class="fqc">
-        <h3>What are the minimum requirements?</h3>
-        <p>Three months in business and at least $8,000 in monthly sales. If you meet both, send us your application.</p>
-      </div>
-      <div class="fqc">
-        <h3>How quickly can I get approved?</h3>
+      </details>
+      <details class="fqc">
+        <summary><span class="fqc-q">What are the minimum requirements?</span><span class="fqc-ico"><img src="/assets/brand/guavo-icon.svg" alt="" width="24" height="24"></span></summary>
+        <p>Four months in business and at least $8,000 in monthly sales. If you meet both, send us your application.</p>
+      </details>
+      <details class="fqc">
+        <summary><span class="fqc-q">How quickly can I get approved?</span><span class="fqc-ico"><img src="/assets/brand/guavo-icon.svg" alt="" width="24" height="24"></span></summary>
         <p>Most applications are approved within 24 hours of us receiving your complete file.</p>
-      </div>
+      </details>
     </div>
 
     <a class="fqs-more" href="/faq.html">Read all questions &rarr;</a>
