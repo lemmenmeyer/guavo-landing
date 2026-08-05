@@ -159,14 +159,31 @@
 }
 body{font-family:var(--fb);background:var(--cr);color:var(--tx);line-height:1.65;-webkit-font-smoothing:antialiased;}
 
-/* Header */
-nav{max-width:var(--mx);margin:0 auto;padding:22px 40px;display:flex;align-items:center;justify-content:space-between;}
-nav img{height:26px;display:block;}
-.ncta{background:var(--o);color:var(--wh);font-size:14px;font-weight:600;padding:10px 22px;border-radius:100px;text-decoration:none;}
-.ncta:hover{background:var(--oa);}
+/* Header — matches the homepage exactly so the site reads as one place. */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  background:rgba(250,248,244,.97);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--bd);
+  height:62px;padding:0 40px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nl img{height:42px;display:block;}
+.nr{display:flex;align-items:center;gap:28px;}
+.nr a{position:relative;font-size:13.5px;font-weight:500;color:var(--mu);text-decoration:none;transition:color .2s;}
+.nr a:hover{color:var(--g);}
+/* Current page indicator */
+.nr a.active{color:var(--g);font-weight:600;}
+.nr a.active::after{content:"";position:absolute;left:0;right:0;bottom:-21px;height:2px;background:var(--o);}
+.ncta{
+  background:var(--g);color:var(--wh)!important;
+  padding:9px 22px;border-radius:var(--r);
+  font-weight:600!important;transition:background .2s!important;
+}
+.ncta:hover{background:var(--gm)!important;}
+.ncta.active::after{display:none;}
 
 /* Hero */
-.hero{background:var(--g);padding:72px 40px 80px;}
+.hero{background:var(--g);padding:134px 40px 80px;} /* 62px nav + 72px */
 .hero-in{max-width:var(--mx);margin:0 auto;}
 .eyebrow{font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--o);margin-bottom:14px;}
 h1{font-family:var(--fd);font-weight:700;font-size:clamp(32px,5vw,50px);line-height:1.12;color:var(--wh);margin-bottom:16px;max-width:16ch;}
@@ -176,14 +193,9 @@ h1{font-family:var(--fd);font-weight:700;font-size:clamp(32px,5vw,50px);line-hei
 /* Body */
 .wrap{max-width:var(--mx);margin:0 auto;padding:0 40px 110px;}
 
-/* Jump links */
-.toc{display:flex;flex-wrap:wrap;gap:9px;margin:-30px 0 64px;position:relative;z-index:2;background:var(--wh);border:1px solid var(--wd);border-radius:var(--r);padding:26px 28px;box-shadow:0 6px 28px rgba(0,55,36,.07);}
-.toc-lbl{width:100%;font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--gm);margin-bottom:4px;}
-.toc a{font-size:14px;color:var(--tx);background:var(--wm);border:1px solid var(--wd);border-radius:100px;padding:7px 15px;text-decoration:none;transition:all .16s ease;}
-.toc a:hover{background:var(--g);border-color:var(--g);color:var(--wh);}
-
 /* Q&A */
 .qa{border-top:1px solid var(--bd);padding:34px 0 30px;display:grid;grid-template-columns:44px 1fr;gap:0 20px;}
+.qa:first-of-type{border-top:none;padding-top:56px;}
 .qa:last-of-type{border-bottom:1px solid var(--bd);}
 .qnum{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--o);line-height:1.35;}
 h2{font-family:var(--fd);font-weight:700;font-size:24px;line-height:1.3;color:var(--g);margin-bottom:10px;scroll-margin-top:24px;}
@@ -211,11 +223,12 @@ footer{border-top:1px solid var(--wd);}
 .skip:focus{left:0;}
 
 @media(max-width:720px){
-  nav{padding:18px 20px;}
-  .hero{padding:52px 20px 66px;}
+  nav{padding:0 20px;}
+  nav .nr a:not(.ncta){display:none;}
+  .hero{padding:114px 20px 66px;}
   .wrap{padding:0 20px 80px;}
-  .toc{padding:20px;margin:-26px 0 48px;}
   .qa{grid-template-columns:1fr;gap:0;padding:28px 0 24px;}
+  .qa:first-of-type{padding-top:44px;}
   .qnum{font-size:15px;margin-bottom:6px;}
   h2{font-size:21px;}
   .cta{padding:40px 24px;}
@@ -227,8 +240,14 @@ footer{border-top:1px solid var(--wd);}
 <a href="#main" class="skip">Skip to content</a>
 
 <nav>
-  <a href="/" aria-label="Guavo home"><img alt="Guavo" src="/assets/brand/guavo-logo-horizontal.svg"></a>
-  <a class="ncta" href="/#apply">Get Funded</a>
+  <a href="/" class="nl" aria-label="Guavo home"><img alt="Guavo" src="/assets/brand/guavo-logo-horizontal.svg"></a>
+  <div class="nr">
+    <a href="/#how-it-works">How it works</a>
+    <a href="/#why-guavo">Why Guavo</a>
+    <a href="/faq.html" class="active" aria-current="page">FAQ</a>
+    <a href="/#apply">Contact</a>
+    <a href="/#apply" class="ncta">Get Funded</a>
+  </div>
 </nav>
 
 <header class="hero">
@@ -241,20 +260,6 @@ footer{border-top:1px solid var(--wd);}
 
 <main id="main">
 <div class="wrap">
-
-  <nav class="toc" aria-label="Questions on this page">
-    <span class="toc-lbl">Jump to</span>
-    <a href="#what-is-rbf">What it is</a>
-    <a href="#vs-bank-loan">Vs. a bank loan</a>
-    <a href="#get-offer">Getting your offer</a>
-    <a href="#credit-score">Credit score</a>
-    <a href="#approval-speed">Approval speed</a>
-    <a href="#how-much">How much</a>
-    <a href="#minimums">Minimum requirements</a>
-    <a href="#rates">How rates work</a>
-    <a href="#payments">Payments</a>
-    <a href="#sales-change">If sales change</a>
-  </nav>
 
   <div class="qa">
     <div class="qnum">01</div>

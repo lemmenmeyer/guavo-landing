@@ -170,8 +170,12 @@ nav{
 }
 .nl img{height:42px;display:block;}
 .nr{display:flex;align-items:center;gap:28px;}
-.nr a{font-size:13.5px;font-weight:500;color:var(--mu);text-decoration:none;transition:color .2s;}
+.nr a{position:relative;font-size:13.5px;font-weight:500;color:var(--mu);text-decoration:none;transition:color .2s;}
 .nr a:hover{color:var(--g);}
+/* Current page indicator, shared with faq.html */
+.nr a.active{color:var(--g);font-weight:600;}
+.nr a.active::after{content:"";position:absolute;left:0;right:0;bottom:-21px;height:2px;background:var(--o);}
+.ncta.active::after{display:none;}
 .ncta{
   background:var(--g);color:var(--wh)!important;
   padding:9px 22px;border-radius:var(--r);
