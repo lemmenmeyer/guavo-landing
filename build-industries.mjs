@@ -18,6 +18,10 @@ const OUT = new URL('./industries/', import.meta.url);
 const INDUSTRIES = [
   {
     slug: 'restaurants',
+    icon: `<path d="M6 3v8a2 2 0 0 0 2 2v8M6 3v5M10 3v5M17 3c-1.6 0-2.6 2.5-2.6 5.5S15.4 13 17 13v8"/>`,
+    blurb: 'Food and drink businesses that live on daily traffic and swing hard by season.',
+    purposes: 'Kitchen equipment, inventory, build-outs, and payroll through the slow months.',
+    examples: 'Restaurants, bars, caterers, coffee shops',
     nav: 'Restaurants & Bars',
     title: 'Restaurant & Bar Funding',
     h1: 'Funding for restaurants and bars',
@@ -41,6 +45,10 @@ const INDUSTRIES = [
   },
   {
     slug: 'medical-dental',
+    icon: `<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 7.5v9M7.5 12h9"/>`,
+    blurb: 'Practices that deliver care long before an insurer reimburses it.',
+    purposes: 'Equipment, extra treatment rooms, hiring, and bridging reimbursement cycles.',
+    examples: 'Physicians, dentists, chiropractors, outpatient clinics',
     nav: 'Medical & Dental',
     title: 'Medical & Dental Practice Funding',
     h1: 'Funding for medical and dental practices',
@@ -64,6 +72,10 @@ const INDUSTRIES = [
   },
   {
     slug: 'auto-repair',
+    icon: `<path d="M15.5 3.5a5 5 0 0 0-6 6.4L4 15.4a2.5 2.5 0 1 0 3.5 3.5l5.5-5.5a5 5 0 0 0 6.4-6l-3 3-2.9-2.9z"/>`,
+    blurb: 'Service shops that buy parts and do the work before the customer pays.',
+    purposes: 'Lifts and diagnostic tools, parts inventory, extra bays, and vehicles.',
+    examples: 'Repair shops, body shops, tire dealers, towing, used car dealers',
     nav: 'Auto & Repair',
     title: 'Auto Repair Shop Funding',
     h1: 'Funding for auto repair and service shops',
@@ -88,6 +100,10 @@ const INDUSTRIES = [
   },
   {
     slug: 'professional-services',
+    icon: `<rect x="2.5" y="7" width="19" height="13" rx="2.5"/><path d="M8.5 7V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2M2.5 12.5h19"/>`,
+    blurb: 'Firms with concentrated seasons and long collection cycles.',
+    purposes: 'Seasonal hiring, software and licensing, acquiring a client book, and off-season overhead.',
+    examples: 'CPAs, tax preparers, bookkeepers, consultants',
     nav: 'Professional Services',
     title: 'Accounting & Professional Services Funding',
     h1: 'Funding for accounting and professional services firms',
@@ -111,6 +127,10 @@ const INDUSTRIES = [
   },
   {
     slug: 'retail',
+    icon: `<path d="M4 8h16l-1.2 12.2a1.8 1.8 0 0 1-1.8 1.6H7a1.8 1.8 0 0 1-1.8-1.6z"/><path d="M8.5 8V6a3.5 3.5 0 0 1 7 0v2"/>`,
+    blurb: 'Storefronts that buy inventory months before it sells.',
+    purposes: 'Seasonal stock, coolers and fixtures, POS systems, and store remodels.',
+    examples: 'Convenience stores, gas stations, liquor, clothing, electronics',
     nav: 'Retail & C-Stores',
     title: 'Retail & Convenience Store Funding',
     h1: 'Funding for retail and convenience stores',
@@ -135,6 +155,10 @@ const INDUSTRIES = [
   },
   {
     slug: 'contractors',
+    icon: `<path d="M13.5 6.5 17 3l4 4-3.5 3.5zM15.2 8.2 4.5 18.9a2.1 2.1 0 0 0 3 3L18.2 11.2"/>`,
+    blurb: 'Trades that pay for materials and crews ahead of the draw.',
+    purposes: 'Materials for signed jobs, trucks and equipment, crew payroll, and larger contracts.',
+    examples: 'HVAC, plumbing, electrical, remodeling, landscaping, pest control',
     nav: 'Contractors & Trades',
     title: 'Contractor & Trade Funding',
     h1: 'Funding for contractors and trade businesses',
@@ -159,6 +183,10 @@ const INDUSTRIES = [
   },
   {
     slug: 'salons-spas-gyms',
+    icon: `<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.6 15.4M20 20 8.6 8.6"/>`,
+    blurb: 'Appointment and membership businesses where the equipment is the service.',
+    purposes: 'Stations and treatment rooms, equipment, build-outs, and marketing to fill the calendar.',
+    examples: 'Hair, nails, spas, med-spas, gyms, pet grooming',
     nav: 'Salons, Spas & Gyms',
     title: 'Salon, Spa & Gym Funding',
     h1: 'Funding for salons, spas, and gyms',
@@ -338,13 +366,24 @@ h2{font-family:var(--fd);font-weight:700;font-size:clamp(24px,3.2vw,32px);color:
 .morelist a{font-size:14px;color:var(--tx);background:var(--wm);border:1px solid var(--wd);border-radius:100px;padding:8px 17px;text-decoration:none;transition:all .16s ease;}
 .morelist a:hover{background:var(--g);border-color:var(--g);color:var(--wh);}
 
-.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:34px;}
-.card{background:var(--wh);border:1px solid var(--wd);border-radius:var(--r);padding:26px 28px;text-decoration:none;display:block;position:relative;overflow:hidden;transition:border-color .18s ease;}
+/* Hub tiles: 2 across, 4 down. */
+.sec-first{margin-top:56px;}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+.card{background:var(--wh);border:1px solid var(--wd);border-radius:var(--r);padding:30px 30px 28px;text-decoration:none;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:border-color .18s ease,box-shadow .18s ease;}
 .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--o);opacity:0;transition:opacity .18s ease;}
 .card:hover::before{opacity:1;}
-.card:hover{border-color:var(--bd);}
-.card h3{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--g);margin-bottom:8px;}
-.card p{font-size:14.5px;color:var(--mu);font-weight:300;line-height:1.7;}
+.card:hover{border-color:var(--bd);box-shadow:0 6px 26px rgba(0,55,36,.07);}
+.card-ico{width:46px;height:46px;border-radius:var(--r);background:var(--wm);border:1px solid var(--wd);display:flex;align-items:center;justify-content:center;color:var(--g);margin-bottom:18px;transition:background .18s ease,border-color .18s ease;}
+.card-ico svg{width:23px;height:23px;display:block;}
+.card:hover .card-ico{background:var(--cr);border-color:var(--o);}
+.card h3{font-family:var(--fd);font-size:21px;font-weight:700;color:var(--g);margin-bottom:9px;line-height:1.25;}
+.card-b{font-size:15px;color:var(--tx);font-weight:300;line-height:1.65;margin-bottom:13px;}
+.card-p{font-size:14px;color:var(--mu);font-weight:300;line-height:1.65;margin-bottom:16px;}
+.card-p b{font-weight:600;color:var(--gm);}
+.card-e{margin-top:auto;font-size:12.5px;color:var(--mu);letter-spacing:.2px;padding-top:14px;border-top:1px solid var(--wd);}
+.card-cta{background:var(--wm);}
+.card-cta .card-ico{background:var(--wh);}
+.card-cta .card-e{color:var(--gm);font-weight:600;font-size:14px;}
 
 footer{border-top:1px solid var(--wd);}
 .fin{max-width:var(--mx);margin:0 auto;padding:30px 40px;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;font-size:13.5px;color:var(--mu);}
@@ -538,27 +577,29 @@ ${nav('industries')}
     <p class="crumb"><a href="/">Home</a> &rsaquo; Industries</p>
     <div class="eyebrow">Industries</div>
     <h1>Who we fund</h1>
-    <p class="lede">Some of the businesses we work with. If your revenue is steady and you have been open at least four months, there is likely a fit. Start with whichever looks closest to yours.</p>
+    <p class="lede">Guavo provides revenue-based financing for inventory, equipment, payroll, and expansion. These are some of the industries we serve.</p>
   </div>
 </header>
 
 <main id="main">
 <div class="wrap">
 
-  <div class="band">
-    <div class="stat"><b>$5K &ndash; $100K</b><span>Funding range</span></div>
-    <div class="stat"><b>24 hours</b><span>Most approvals</span></div>
-    <div class="stat"><b>4 months</b><span>Minimum in business</span></div>
-    <div class="stat"><b>Soft pull</b><span>No credit score impact</span></div>
-  </div>
-
-  <section class="sec">
-    <h2>Industries we fund</h2>
+  <section class="sec sec-first">
     <div class="cards">
       ${INDUSTRIES.map(i => `<a class="card" href="/industries/${i.slug}.html">
+        <span class="card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${i.icon}</svg></span>
         <h3>${i.nav}</h3>
-        <p>${i.intro}</p>
+        <p class="card-b">${i.blurb}</p>
+        <p class="card-p"><b>Common uses.</b> ${i.purposes}</p>
+        <p class="card-e">${i.examples}</p>
       </a>`).join('\n      ')}
+      <a class="card card-cta" href="/#apply">
+        <span class="card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
+        <h3>Something else?</h3>
+        <p class="card-b">This is not the full list. If your business is established and revenue is steady, there is a good chance we can fund it.</p>
+        <p class="card-p"><b>Find out.</b> The application takes three minutes and uses a soft credit pull, so checking costs you nothing.</p>
+        <span class="card-e">Apply now &rarr;</span>
+      </a>
     </div>
   </section>
 
