@@ -965,6 +965,10 @@ input[type=range]:focus-visible + .slider-thumb,
             </select>
           </div>
           <div class="ff">
+            <label for="f_ein">EIN</label>
+            <input id="f_ein" type="text" placeholder="XX-XXXXXXX" maxlength="10" pattern="\d{2}-?\d{7}" inputmode="numeric" autocomplete="off" required>
+          </div>
+          <div class="ff">
             <label for="f_years">Years in Business</label>
             <select id="f_years">
               <option value="">Select...</option>
@@ -1036,8 +1040,8 @@ input[type=range]:focus-visible + .slider-thumb,
             <input id="f_owner_phone" type="tel" placeholder="(555) 000-0000" autocomplete="tel">
           </div>
           <div class="ff">
-            <label for="f_ssn4">Last 4 Digits of SSN</label>
-            <input id="f_ssn4" type="text" placeholder="XXXX" maxlength="4" pattern="\d{4}" inputmode="numeric" required>
+            <label for="f_ssn">Social Security Number</label>
+            <input id="f_ssn" type="text" placeholder="XXX-XX-XXXX" maxlength="11" pattern="\d{3}-?\d{2}-?\d{4}" inputmode="numeric" autocomplete="off" required>
           </div>
           <div class="ff full">
             <label for="f_owner_email">Email Address</label>
@@ -1593,6 +1597,7 @@ async function submitForm(e){
     drawRow('Business Legal Name', g('f_biz_name'));
     drawRow('DBA', g('f_dba'));
     drawRow('Entity Type', g('f_entity'));
+    drawRow('EIN', g('f_ein'));
     drawRow('Years in Business', g('f_years'));
     drawRow('Business Description', g('f_biz_desc'));
     drawRow('Business Address', composeAddress('f_biz_street','f_biz_city','f_biz_state','f_biz_postal'));
@@ -1607,7 +1612,7 @@ async function submitForm(e){
     drawRow('Ownership %', (g('f_ownership') || '—') + '%');
     drawRow('Mobile Phone', g('f_owner_phone'));
     drawRow('Home Address', composeAddress('f_home_street','f_home_city','f_home_state','f_home_postal'));
-    drawRow('Last 4 SSN', g('f_ssn4') || '—');
+    drawRow('SSN', g('f_ssn') || '—');
     drawRow('Owner Email', g('f_owner_email'));
 
     // ── FINANCING ────────────────────────────────────────────
@@ -1709,6 +1714,7 @@ async function submitForm(e){
       'Business Legal Name : ' + g('f_biz_name'),
       'DBA                 : ' + (g('f_dba') || '—'),
       'Entity Type         : ' + (g('f_entity') || '—'),
+      'EIN                 : ' + (g('f_ein') || '—'),
       'Years in Business   : ' + (g('f_years') || '—'),
       'Description         : ' + g('f_biz_desc'),
       'Business Address    : ' + composeAddress('f_biz_street','f_biz_city','f_biz_state','f_biz_postal'),
@@ -1723,7 +1729,7 @@ async function submitForm(e){
       'Ownership %         : ' + (g('f_ownership') || '—') + '%',
       'Mobile Phone        : ' + (g('f_owner_phone') || '—'),
       'Home Address        : ' + composeAddress('f_home_street','f_home_city','f_home_state','f_home_postal'),
-      'Last 4 SSN          : ' + (g('f_ssn4') || '—'),
+      'SSN                 : ' + (g('f_ssn') || '—'),
       'Owner Email         : ' + g('f_owner_email'),
       '',
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
@@ -1875,6 +1881,7 @@ async function submitForm(e){
           legal_name:  g('f_biz_name'),
           dba:         g('f_dba'),
           entity_type: g('f_entity'),
+          ein:         g('f_ein'),
           years_in_business: g('f_years'),
           description: g('f_biz_desc'),
           street:      g('f_biz_street'),
@@ -1890,7 +1897,7 @@ async function submitForm(e){
           dob:         g('f_dob'),
           ownership_pct: g('f_ownership'),
           mobile_phone:  g('f_owner_phone'),
-          ssn_last4:   g('f_ssn4'),
+          ssn:         g('f_ssn'),
           street:      g('f_home_street'),
           city:        g('f_home_city'),
           state:       g('f_home_state').toUpperCase(),
@@ -1982,6 +1989,31 @@ async function submitForm(e){
     el.setAttribute('aria-hidden','true');
     el.setAttribute('focusable','false');
   });
+</script>
+
+<script>
+// EIN / SSN input formatting. Both are transcribed off a document by someone
+// who is not looking at the screen, and an unformatted run of nine digits
+// hides a transposed pair. Grouping them makes a wrong digit visible while
+// typing rather than at underwriting.
+(function(){
+  function group(el, sizes){
+    if (!el) return;
+    const max = sizes.reduce((a,b) => a + b, 0);
+    el.addEventListener('input', function(){
+      const digits = el.value.replace(/\D/g, '').slice(0, max);
+      let out = '', i = 0;
+      for (const size of sizes) {
+        if (i >= digits.length) break;
+        out += (out ? '-' : '') + digits.slice(i, i + size);
+        i += size;
+      }
+      el.value = out;
+    });
+  }
+  group(document.getElementById('f_ein'), [2, 7]);
+  group(document.getElementById('f_ssn'), [3, 2, 4]);
+})();
 </script>
 
 <script>
