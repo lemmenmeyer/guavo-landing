@@ -425,13 +425,15 @@ input[type=range]{
    are progressive enhancement and stay hidden unless the row overflows. */
 .istrip{background:var(--cr);}
 .istrip-in{max-width:var(--mx);margin:0 auto;padding:80px 40px;}
-.istrip-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:30px;}
+.istrip-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:14px;}
 .istrip-arrows{display:flex;gap:8px;flex:0 0 auto;}
 .iarrow{width:38px;height:38px;border-radius:50%;border:1px solid var(--bd);background:var(--wh);color:var(--g);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .16s ease;}
 .iarrow svg{width:17px;height:17px;}
 .iarrow:hover:not(:disabled){background:var(--g);border-color:var(--g);color:var(--wh);}
 .iarrow:disabled{opacity:.3;cursor:default;}
-.istrip-track{display:flex;gap:14px;overflow-x:auto;scroll-behavior:smooth;scroll-snap-type:x proximity;padding-bottom:4px;scrollbar-width:none;-ms-overflow-style:none;}
+/* overflow-x:auto forces overflow-y to compute as auto, so the hover lift
+   and card shadow get clipped without vertical padding to sit in. */
+.istrip-track{display:flex;gap:14px;overflow-x:auto;scroll-behavior:smooth;scroll-snap-type:x proximity;padding:18px 0 26px;scrollbar-width:none;-ms-overflow-style:none;}
 .istrip-track::-webkit-scrollbar{display:none;}
 .isq{flex:0 0 152px;scroll-snap-align:start;background:var(--wh);border:1px solid var(--wd);border-radius:var(--r);padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;text-decoration:none;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;}
 .isq:hover{border-color:var(--o);box-shadow:0 6px 22px rgba(0,55,36,.08);transform:translateY(-2px);}
@@ -917,7 +919,7 @@ input[type=range]:focus-visible + .slider-thumb,
       </a>
       <a class="isq isq-more" href="/industries/#other">
         <span class="isq-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
-        <span class="isq-n">More industries</span>
+        <span class="isq-n">More</span>
       </a>
     </div>
   </div>
