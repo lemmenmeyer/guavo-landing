@@ -406,6 +406,29 @@ input[type=range]{
 .sl{font-size:12.5px;color:rgba(255,255,255,.55);}
 
 /* APPLY */
+/* Industries strip: one horizontal line of icon + name squares. Overflows
+   into a native horizontal scroll (so touch swipe works for free); arrows
+   are progressive enhancement and stay hidden unless the row overflows. */
+.istrip{background:var(--cr);border-top:1px solid var(--wd);}
+.istrip-in{max-width:var(--mx);margin:0 auto;padding:80px 40px;}
+.istrip-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:30px;}
+.istrip-arrows{display:flex;gap:8px;flex:0 0 auto;}
+.iarrow{width:38px;height:38px;border-radius:50%;border:1px solid var(--bd);background:var(--wh);color:var(--g);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .16s ease;}
+.iarrow svg{width:17px;height:17px;}
+.iarrow:hover:not(:disabled){background:var(--g);border-color:var(--g);color:var(--wh);}
+.iarrow:disabled{opacity:.3;cursor:default;}
+.istrip-track{display:flex;gap:14px;overflow-x:auto;scroll-behavior:smooth;scroll-snap-type:x proximity;padding-bottom:4px;scrollbar-width:none;-ms-overflow-style:none;}
+.istrip-track::-webkit-scrollbar{display:none;}
+.isq{flex:0 0 152px;scroll-snap-align:start;background:var(--wh);border:1px solid var(--wd);border-radius:var(--r);padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;text-decoration:none;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;}
+.isq:hover{border-color:var(--o);box-shadow:0 6px 22px rgba(0,55,36,.08);transform:translateY(-2px);}
+.isq-i{width:44px;height:44px;border-radius:var(--r);background:var(--wm);display:flex;align-items:center;justify-content:center;color:var(--g);transition:background .18s ease;}
+.isq-i svg{width:22px;height:22px;display:block;}
+.isq:hover .isq-i{background:var(--cr);}
+.isq-n{font-size:13.5px;font-weight:500;color:var(--g);line-height:1.35;}
+.isq-more{background:var(--wm);border-style:dashed;}
+.isq-more .isq-i{background:var(--wh);}
+.isq-more .isq-n{color:var(--gm);}
+
 .asec{max-width:720px;margin:0 auto;padding:96px 40px;}
 
 /* Pre-application FAQ */
@@ -584,6 +607,8 @@ footer{background:var(--g);padding:52px 40px 30px;}
 @media(max-width:640px){
   .asec{padding:60px 16px;}
   .fqs-in{padding:60px 20px;}
+  .istrip-in{padding:60px 20px;}
+  .istrip-head{margin-bottom:24px;}
   .fqc summary{padding:20px 18px;gap:12px;}
   .fqc-q{font-size:16.5px;}
   .fqc-ico{width:36px;height:36px;}
@@ -628,7 +653,7 @@ input[type=range]:focus-visible + .slider-thumb,
     <a href="#how-it-works" data-spy="how-it-works">How it works</a>
     <a href="#why-guavo" data-spy="why-guavo">Why Guavo</a>
     <span class="nd">
-      <a href="/industries/">Industries</a>
+      <a href="/industries/" data-spy="industries-strip">Industries</a>
       <div class="ndm">
         <a href="/industries/#restaurants">Restaurants & Bars</a>
         <a href="/industries/#medical-dental">Medical & Dental</a>
@@ -821,6 +846,64 @@ input[type=range]:focus-visible + .slider-thumb,
           <div style="font-size:13px;color:rgba(255,255,255,0.55);">Decisions made by people who work with you to get your deal done.</div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- INDUSTRIES STRIP — icon + name only, one horizontal line. Arrows appear
+     only when the row actually overflows. Icons are duplicated from
+     build-industries.mjs, which is the source of truth for /industries/;
+     if one changes there, change it here too. -->
+<section id="industries-strip" class="istrip">
+  <div class="istrip-in">
+    <div class="istrip-head">
+      <div>
+        <div class="sec-ey">Industries</div>
+        <h2 class="sec-h" style="margin-bottom:0;">Who we work with</h2>
+      </div>
+      <div class="istrip-arrows" id="istripArrows" hidden>
+        <button type="button" class="iarrow" data-dir="-1" aria-label="Show previous industries" aria-controls="istripTrack">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button type="button" class="iarrow" data-dir="1" aria-label="Show more industries" aria-controls="istripTrack">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="istrip-track" id="istripTrack" tabindex="0" role="group" aria-label="Industries we work with">
+      <a class="isq" href="/industries/#restaurants">
+        <span class="isq-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v8a2 2 0 0 0 2 2v8M6 3v5M10 3v5M17 3c-1.6 0-2.6 2.5-2.6 5.5S15.4 13 17 13v8"/></svg></span>
+        <span class="isq-n">Restaurants &amp; Bars</span>
+      </a>
+      <a class="isq" href="/industries/#medical-dental">
+        <span class="isq-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 7.5v9M7.5 12h9"/></svg></span>
+        <span class="isq-n">Medical &amp; Dental</span>
+      </a>
+      <a class="isq" href="/industries/#auto-repair">
+        <span class="isq-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 3.5a5 5 0 0 0-6 6.4L4 15.4a2.5 2.5 0 1 0 3.5 3.5l5.5-5.5a5 5 0 0 0 6.4-6l-3 3-2.9-2.9z"/></svg></span>
+        <span class="isq-n">Auto &amp; Repair</span>
+      </a>
+      <a class="isq" href="/industries/#professional-services">
+        <span class="isq-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="7" width="19" height="13" rx="2.5"/><path d="M8.5 7V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2M2.5 12.5h19"/></svg></span>
+        <span class="isq-n">Professional Services</span>
+      </a>
+      <a class="isq" href="/industries/#retail">
+        <span class="isq-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16l-1.2 12.2a1.8 1.8 0 0 1-1.8 1.6H7a1.8 1.8 0 0 1-1.8-1.6z"/><path d="M8.5 8V6a3.5 3.5 0 0 1 7 0v2"/></svg></span>
+        <span class="isq-n">Retail &amp; C-Stores</span>
+      </a>
+      <a class="isq" href="/industries/#contractors">
+        <span class="isq-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 6.5 17 3l4 4-3.5 3.5zM15.2 8.2 4.5 18.9a2.1 2.1 0 0 0 3 3L18.2 11.2"/></svg></span>
+        <span class="isq-n">Contractors &amp; Trades</span>
+      </a>
+      <a class="isq" href="/industries/#salons-spas-gyms">
+        <span class="isq-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.6 15.4M20 20 8.6 8.6"/></svg></span>
+        <span class="isq-n">Salons, Spas &amp; Gyms</span>
+      </a>
+      <a class="isq isq-more" href="/industries/#other">
+        <span class="isq-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
+        <span class="isq-n">Don&rsquo;t see yours?</span>
+      </a>
     </div>
   </div>
 </section>
@@ -1882,6 +1965,49 @@ async function submitForm(e){
     el.setAttribute('aria-hidden','true');
     el.setAttribute('focusable','false');
   });
+</script>
+
+<script>
+// INDUSTRIES STRIP — arrows are enhancement only. The row is a native
+// horizontal scroller, so touch swipe and keyboard arrows already work; these
+// buttons only appear when the content actually overflows its container.
+(function(){
+  const track = document.getElementById('istripTrack');
+  const arrows = document.getElementById('istripArrows');
+  if (!track || !arrows) return;
+  const btns = [...arrows.querySelectorAll('.iarrow')];
+
+  function step(){
+    const card = track.querySelector('.isq');
+    if (!card) return 300;
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 14;
+    // Scroll by whole cards, filling roughly the visible width.
+    const per = Math.max(1, Math.floor(track.clientWidth / (card.offsetWidth + gap)) - 1);
+    return per * (card.offsetWidth + gap);
+  }
+
+  function sync(){
+    const overflows = track.scrollWidth > track.clientWidth + 1;
+    arrows.hidden = !overflows;
+    if (!overflows) return;
+    const max = track.scrollWidth - track.clientWidth;
+    btns[0].disabled = track.scrollLeft <= 1;
+    btns[1].disabled = track.scrollLeft >= max - 1;
+  }
+
+  btns.forEach(b => b.addEventListener('click', () => {
+    track.scrollBy({ left: Number(b.dataset.dir) * step(), behavior: 'smooth' });
+  }));
+
+  let t = false;
+  track.addEventListener('scroll', () => {
+    if (t) return;
+    t = true;
+    requestAnimationFrame(() => { t = false; sync(); });
+  }, { passive: true });
+  addEventListener('resize', sync);
+  sync();
+})();
 </script>
 
 <script>
