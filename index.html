@@ -172,10 +172,14 @@ nav{
 .nr{display:flex;align-items:center;gap:28px;}
 .nr a{position:relative;font-size:13.5px;font-weight:500;color:var(--mu);text-decoration:none;transition:color .2s;}
 .nr a:hover{color:var(--g);}
-/* Current page indicator, shared with faq.html */
+/* Current page / current section indicator, shared with faq.html */
 .nr a.active{color:var(--g);font-weight:600;}
 .nr a.active::after{content:"";position:absolute;left:0;right:0;bottom:-21px;height:2px;background:var(--o);}
 .ncta.active::after{display:none;}
+/* Anchor targets must clear the 62px fixed nav, otherwise every jump link
+   lands its heading underneath the header. */
+#how-it-works,#why-guavo,#apply,#faq-quick,#contact{scroll-margin-top:70px;}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth;}}
 .ncta{
   background:var(--g);color:var(--wh)!important;
   padding:9px 22px;border-radius:var(--r);
@@ -608,10 +612,10 @@ input[type=range]:focus-visible + .slider-thumb,
 <nav>
   <a href="#" class="nl"><img alt="Guavo" src="/assets/brand/guavo-logo-horizontal.svg"></a>
   <div class="nr">
-    <a href="#how-it-works">How it works</a>
-    <a href="#why-guavo">Why Guavo</a>
-    <a href="/faq.html">FAQ</a>
-    <a href="#apply">Contact</a>
+    <a href="#how-it-works" data-spy="how-it-works">How it works</a>
+    <a href="#why-guavo" data-spy="why-guavo">Why Guavo</a>
+    <a href="#contact" data-spy="contact">Contact</a>
+    <a href="/faq.html" data-spy="faq-quick">FAQ</a>
     <a href="#apply" class="ncta">Get Funded</a>
   </div>
 </nav>
@@ -1106,7 +1110,7 @@ input[type=range]:focus-visible + .slider-thumb,
 </main>
 
 <!-- FOOTER -->
-<footer>
+<footer id="contact">
   <div class="fi">
     <div>
 
@@ -1313,6 +1317,7 @@ function composeAddress(streetId, cityId, stateId, postalId){
   const tail = [state, postal].filter(Boolean).join(' ');
   return [street, city, tail].filter(Boolean).join(', ');
 }
+
 
 async function submitForm(e){
   e.preventDefault();
@@ -1815,6 +1820,55 @@ async function submitForm(e){
     el.setAttribute('aria-hidden','true');
     el.setAttribute('focusable','false');
   });
+</script>
+
+<script>
+// SCROLLSPY — underline the nav item for whichever section you are looking at.
+// Nav links carry data-spy because the FAQ item points at /faq.html while
+// watching #faq-quick, so the target cannot be read off the href.
+(function(){
+  const NAV_H = 62;
+  const links = [...document.querySelectorAll('.nr a[data-spy]')];
+  const items = links
+    .map(a => ({ a, el: document.getElementById(a.dataset.spy) }))
+    .filter(i => i.el);
+  if (!items.length) return;
+  // Document order, so "last one above the line" is well defined.
+  items.sort((x, y) => x.el.getBoundingClientRect().top + window.scrollY
+                     - (y.el.getBoundingClientRect().top + window.scrollY));
+
+  let current = null;
+  function update(){
+    const line = NAV_H + 8;
+    let found = null;
+    for (const i of items) {
+      if (i.el.getBoundingClientRect().top <= line) found = i;
+    }
+    // The footer sits at the document end and can never clear the line on
+    // short viewports, so bottom-of-page always resolves to the last item.
+    const atBottom = window.innerHeight + window.scrollY
+                     >= document.documentElement.scrollHeight - 2;
+    if (atBottom) found = items[items.length - 1];
+    if (found === current) return;
+    current = found;
+    for (const i of items) {
+      const on = i === found;
+      i.a.classList.toggle('active', on);
+      if (on) i.a.setAttribute('aria-current', 'true');
+      else i.a.removeAttribute('aria-current');
+    }
+  }
+
+  let ticking = false;
+  function onScroll(){
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; update(); });
+  }
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', onScroll);
+  update();
+})();
 </script>
 
 <!-- Klaro consent manager (self-hosted) -->
