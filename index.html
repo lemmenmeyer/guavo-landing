@@ -169,7 +169,7 @@ nav{
   display:flex;align-items:center;justify-content:space-between;
 }
 .nl img{height:42px;display:block;}
-.nr{display:flex;align-items:center;gap:28px;}
+.nr{display:flex;align-items:center;gap:24px;}
 .nr a{position:relative;font-size:13.5px;font-weight:500;color:var(--mu);text-decoration:none;transition:color .2s;}
 .nr a:hover{color:var(--g);}
 /* Current page / current section indicator, shared with faq.html */
@@ -558,6 +558,11 @@ footer{background:var(--g);padding:52px 40px 30px;}
   .wstats{margin-top:36px;}
   .fgrid{grid-template-columns:1fr;}
   .fi{grid-template-columns:1fr 1fr;}
+}
+/* Nav collapses earlier than the rest of the layout: seven items crowd the
+   logo below this. Kept in its own query so the industry pages, faq.html and
+   this file all collapse at the same width. */
+@media(max-width:980px){
   nav .nr a:not(.ncta){display:none;}
 }
 /* On narrow viewports the Business / Owner / Financing labels + dots + lines
@@ -614,6 +619,7 @@ input[type=range]:focus-visible + .slider-thumb,
   <div class="nr">
     <a href="#how-it-works" data-spy="how-it-works">How it works</a>
     <a href="#why-guavo" data-spy="why-guavo">Why Guavo</a>
+    <a href="/industries/">Industries</a>
     <a href="#apply" data-spy="apply">Apply</a>
     <a href="/faq.html" data-spy="faq-quick">FAQ</a>
     <a href="#contact" data-spy="contact">Contact</a>
