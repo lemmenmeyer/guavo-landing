@@ -272,7 +272,7 @@ ${nav()}
     <p class="crumb"><a href="/">Home</a> &rsaquo; Industries</p>
     <div class="eyebrow">Industries</div>
     <h1>Who we serve</h1>
-    <p class="lede">Guavo provides revenue-based financing for inventory, equipment, payroll, and expansion. These are some of the industries we serve.</p>
+    <p class="lede">Established small businesses across the United States, funded with financing that moves with their sales rather than against them.</p>
   </div>
 </header>
 
