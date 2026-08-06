@@ -23,7 +23,13 @@ const INDUSTRIES = [
     h1: 'Funding for restaurants and bars',
     meta: 'Revenue-based financing for restaurants, bars, and caterers. $5,000 to $100,000, approved in 24 hours, repaid as a percentage of your sales.',
     intro: 'Kitchen equipment fails on a Friday. A slow January still owes rent. Guavo funds restaurants and bars with financing that moves with your sales instead of against them.',
-    types: ['Full-service restaurants', 'Fast-casual, pizzerias, and taquerías', 'Bars, taverns, and lounges', 'Caterers and event operators', 'Coffee shops, juice bars, and paleterías'],
+    types: [
+      ['Full-service restaurants', 'Table service and a full kitchen means the highest equipment load and the most staff to carry through a slow month. Funding here usually goes to equipment, build-out, or payroll between seasons.'],
+      ['Fast-casual, pizzerias, and taquerías', 'High volume on thin tickets. Small equipment failures interrupt a lot of covers, and a second location is often the fastest route to real growth.'],
+      ['Bars, taverns, and lounges', 'Revenue concentrates into a few nights a week and swings hard by season. Inventory buys, tap systems, and patio build-outs are the common uses.'],
+      ['Caterers and event operators', 'You buy food and pay staff before the client settles the invoice, and bookings cluster around holidays and wedding season. Funding covers the gap between deposit and final payment.'],
+      ['Coffee shops, juice bars, and paleterías', 'Small footprints with equipment that runs all day. Espresso machines and refrigeration are expensive to replace and impossible to operate without.']
+    ],
     uses: [
       ['Replace equipment that failed', 'A walk-in or a hood system does not wait for your next good quarter.'],
       ['Get through the slow season', 'Cover payroll and rent in the months your dining room is quiet.'],
@@ -40,7 +46,13 @@ const INDUSTRIES = [
     h1: 'Funding for medical and dental practices',
     meta: 'Revenue-based financing for physician offices, dental practices, and outpatient clinics. $5,000 to $100,000, approved in 24 hours, no collateral pledge on specific equipment.',
     intro: 'Your practice is busy and your bank account still looks thin, because insurance pays 30 to 90 days after you do the work. Guavo funds the gap.',
-    types: ['Physician offices and specialty practices', 'Dental practices and orthodontics', 'Chiropractors and podiatrists', 'Outpatient and ambulatory care centers', 'Physical therapy and rehabilitation clinics'],
+    types: [
+      ['Physician offices and specialty practices', 'Reimbursement lands 30 to 90 days after the visit while payroll runs every two weeks. Funding smooths that gap or brings a new service line in-house.'],
+      ['Dental practices and orthodontics', 'Growth is capacity-bound. An extra operatory or a newer scanner raises what the practice can produce without moving.'],
+      ['Chiropractors and podiatrists', 'Smaller teams with high equipment dependence and a heavy mix of cash-pay and insurance. Funding covers tables, imaging, and expansion into a second room.'],
+      ['Outpatient and ambulatory care centers', 'Higher fixed costs and more complex billing. Working capital keeps operations steady while claims work through the cycle.'],
+      ['Physical therapy and rehabilitation clinics', 'Revenue depends on treatment capacity and equipment condition. Funding adds rooms, replaces tables, or carries a new therapist through ramp-up.']
+    ],
     uses: [
       ['Add a chair or operatory', 'More capacity without waiting to save for it.'],
       ['Buy imaging or diagnostic equipment', 'Bring scans in-house instead of referring the revenue out.'],
@@ -57,7 +69,14 @@ const INDUSTRIES = [
     h1: 'Funding for auto repair and service shops',
     meta: 'Revenue-based financing for auto repair shops, body shops, tire dealers, and towing operators. $5,000 to $100,000, approved in 24 hours.',
     intro: 'Parts get bought before the customer pays. Guavo funds repair shops so a big job never turns into a cash flow problem.',
-    types: ['General automotive repair', 'Body, paint, and collision shops', 'Auto glass replacement', 'Tire dealers and alignment shops', 'Used car dealers', 'Towing and roadside operators'],
+    types: [
+      ['General automotive repair', 'Parts get bought before the customer pays, and newer vehicles need diagnostic tools older scanners cannot read. Both are common reasons shops seek funding.'],
+      ['Body, paint, and collision shops', 'Insurance work pays on its own timeline while materials and labor come out of your pocket first. Booth and prep equipment are the big capital items.'],
+      ['Auto glass replacement', 'Inventory-heavy and mobile. Funding covers glass stock and the vans that get technicians to the job.'],
+      ['Tire dealers and alignment shops', 'Seasonal demand with real inventory carrying costs. Alignment racks and a deeper tire stock both convert directly into throughput.'],
+      ['Used car dealers', 'Floor stock is the whole business. Funding buys inventory ahead of a strong selling season or covers reconditioning before units go on the lot.'],
+      ['Towing and roadside operators', 'A truck off the road earns nothing and still costs you. Funding goes to purchase, repair, or adding a second rig.']
+    ],
     uses: [
       ['Buy lifts, racks, or scan tools', 'Newer vehicles need diagnostics your current tools cannot read.'],
       ['Stock parts inventory', 'Stop losing jobs because the part is three days out.'],
@@ -74,7 +93,13 @@ const INDUSTRIES = [
     h1: 'Funding for accounting and professional services firms',
     meta: 'Revenue-based financing for CPA firms, tax preparers, bookkeepers, and consultants. $5,000 to $100,000, approved in 24 hours, no collateral required.',
     intro: 'You earn most of the year in a few months and carry overhead through the rest. Guavo funds the shape of that business.',
-    types: ['CPA and accounting firms', 'Tax preparation services', 'Bookkeeping and payroll providers', 'Management and operations consultants', 'Other professional B2B service firms'],
+    types: [
+      ['CPA and accounting firms', 'Most of the year is earned in a few months while overhead runs all twelve. Funding staffs up before the season and carries the team through the trough after it.'],
+      ['Tax preparation services', 'The most concentrated revenue of any vertical we fund. Marketing, seasonal hiring, and software all have to be paid for before a single return is filed.'],
+      ['Bookkeeping and payroll providers', 'Recurring revenue that is steady but slow to compound. Funding is usually for acquiring a book of clients or adding capacity to serve one.'],
+      ['Management and operations consultants', 'Project-based billing with long collection cycles. Working capital bridges the gap between winning an engagement and being paid for it.'],
+      ['Other professional B2B service firms', 'Agencies, staffing, and specialised advisory firms with the same pattern: payroll now, client payment later.']
+    ],
     uses: [
       ['Staff up for the season', 'Hire and train before the work arrives, not after.'],
       ['Cover the off-season trough', 'Keep the team together through the quiet months.'],
@@ -91,7 +116,14 @@ const INDUSTRIES = [
     h1: 'Funding for retail and convenience stores',
     meta: 'Revenue-based financing for convenience stores, gas stations, liquor stores, and specialty retail. $5,000 to $100,000, approved in 24 hours.',
     intro: 'Retail is inventory first and revenue second. You buy in September to sell in December. Guavo funds the gap in between.',
-    types: ['Convenience stores', 'Gas stations with convenience retail', 'Beer, wine, and liquor stores', 'Clothing and shoe stores', 'Electronics and appliance retailers', 'General merchandise and specialty shops'],
+    types: [
+      ['Convenience stores', 'Thin margins carried by volume and consistency. Coolers, shelving, and a deeper stock of what actually moves are the usual funding targets.'],
+      ['Gas stations with convenience retail', 'Fuel inventory ties up serious capital before a gallon is sold, and the store attached to it is where the margin lives.'],
+      ['Beer, wine, and liquor stores', 'Inventory-first and highly seasonal. Buying deep ahead of holidays is often the difference between a good year and an average one.'],
+      ['Clothing, apparel, and shoe stores', 'Boutiques and independent apparel shops buy a season ahead and sell it down over months. Funding covers the buy, the fixtures, and the floor refresh.'],
+      ['Electronics and appliance retailers', 'High ticket, high inventory cost, and manufacturer terms that rarely favour the independent. Working capital keeps the floor stocked.'],
+      ['General merchandise and specialty shops', 'Gift, hobby, home goods, and other independents where the season you prepare for decides the year you have.']
+    ],
     uses: [
       ['Stock up before a season', 'Buy deep ahead of the months that actually make your year.'],
       ['Replace coolers and shelving', 'A failing cooler is lost product and lost trips.'],
@@ -108,7 +140,14 @@ const INDUSTRIES = [
     h1: 'Funding for contractors and trade businesses',
     meta: 'Revenue-based financing for HVAC, plumbing, electrical, remodeling, and landscaping contractors. $5,000 to $100,000, approved in 24 hours.',
     intro: 'You buy materials and pay the crew weeks before the customer pays you. Guavo funds contractors through that gap.',
-    types: ['Plumbing, heating, and HVAC contractors', 'Electrical contractors', 'Residential remodelers', 'Landscaping and grounds services', 'Pest control operators', 'Finish carpentry and specialty trades'],
+    types: [
+      ['Plumbing, heating, and HVAC contractors', 'Peak demand arrives with the weather, and equipment has to be on the truck before the call comes. Funding covers stock, vans, and seasonal crew.'],
+      ['Electrical contractors', 'Material costs move fast and permits add delay before any money comes back. Working capital keeps jobs starting on schedule.'],
+      ['Residential remodelers', 'Draw schedules mean you finance the early phases of every project yourself. Funding lets you run more jobs at once instead of waiting on each one.'],
+      ['Landscaping and grounds services', 'Sharply seasonal with expensive equipment. Funding buys mowers and trucks in spring or carries the crew through winter.'],
+      ['Pest control operators', 'Recurring contracts that are steady once built, but chemicals, licensing, and route vehicles all come first.'],
+      ['Finish carpentry and specialty trades', 'Materials and skilled labour paid up front against net-30 invoicing. Funding covers the gap on larger contracts.']
+    ],
     uses: [
       ['Buy materials for a signed job', 'Start the work without waiting on the first draw.'],
       ['Cover crew payroll between draws', 'Your people get paid weekly. The invoice is net 30.'],
@@ -125,7 +164,14 @@ const INDUSTRIES = [
     h1: 'Funding for salons, spas, and gyms',
     meta: 'Revenue-based financing for hair and nail salons, barber shops, med-spas, gyms, and boutique fitness studios. $5,000 to $100,000, approved in 24 hours.',
     intro: 'Your equipment is your service. When it dates, clients notice and go elsewhere. Guavo funds the upgrade before that happens.',
-    types: ['Hair salons and barber shops', 'Nail salons and waxing studios', 'Day spas and med-spas', 'Lash, brow, and tattoo studios', 'Gyms and boutique fitness studios', 'Pet grooming, boarding, and daycare'],
+    types: [
+      ['Hair salons and barber shops', 'Revenue is capped by chairs and the people in them. Funding adds stations, refreshes the space, or stocks retail product that carries better margin than services.'],
+      ['Nail salons and waxing studios', 'High appointment volume on small tickets. Stations, ventilation, and product inventory are the recurring capital needs.'],
+      ['Day spas and med-spas', 'The most equipment-intensive corner of personal care. Laser and treatment devices are expensive, and dated equipment quietly loses clients to the studio down the road.'],
+      ['Lash, brow, and tattoo studios', 'Appointment-driven with loyal repeat clients. Funding usually goes to build-out, an extra room, or bringing on another artist.'],
+      ['Gyms and boutique fitness studios', 'Membership revenue is predictable but rarely leaves a cushion. Cardio and strength equipment wear out on their own schedule, and marketing is what keeps the roster full.'],
+      ['Pet grooming, boarding, and daycare', 'Steady repeat demand with real facility costs. Funding covers grooming stations, kennel build-out, vans, and expansion into boarding or daycare alongside grooming.']
+    ],
     uses: [
       ['Add stations or treatment rooms', 'Capacity is revenue when you are already booked out.'],
       ['Buy or replace equipment', 'Lasers, cardio, and styling stations wear out on their own schedule.'],
@@ -146,7 +192,12 @@ const nav = (here, prefix = '/') => `
   <div class="nr">
     <a href="/#how-it-works">How it works</a>
     <a href="/#why-guavo">Why Guavo</a>
-    <a href="/industries/"${here === 'industries' ? ' class="active" aria-current="page"' : ''}>Industries</a>
+    <span class="nd">
+      <a href="/industries/"${here === 'industries' ? ' class="active" aria-current="page"' : ''}>Industries</a>
+      <div class="ndm">
+        ${INDUSTRIES.map(i => `<a href="/industries/${i.slug}.html">${i.nav}</a>`).join('\n        ')}
+      </div>
+    </span>
     <a href="/#apply">Apply</a>
     <a href="/faq.html">FAQ</a>
     <a href="/#contact">Contact</a>
@@ -222,6 +273,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(250,248,244,
 .ncta{background:var(--g);color:var(--wh)!important;padding:9px 22px;border-radius:var(--r);font-weight:600!important;transition:background .2s!important;}
 .ncta:hover{background:var(--gm)!important;}
 .ncta.active::after{display:none;}
+/* Industries dropdown. CSS only: :hover for pointers, :focus-within for
+   keyboard. The nav is hidden below 980px so this never has to work on touch. */
+.nd{position:relative;display:inline-flex;align-items:center;}
+.ndm{position:absolute;top:calc(100% + 21px);left:50%;transform:translateX(-50%) translateY(-4px);min-width:230px;background:var(--wh);border:1px solid var(--wd);border-radius:var(--r);box-shadow:0 10px 34px rgba(0,55,36,.13);padding:8px;display:flex;flex-direction:column;gap:2px;opacity:0;visibility:hidden;transition:opacity .16s ease,transform .16s ease,visibility .16s;z-index:210;}
+.nd:hover .ndm,.nd:focus-within .ndm{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
+.ndm a{font-size:13.5px;font-weight:500;color:var(--tx);padding:9px 14px;border-radius:3px;white-space:nowrap;position:relative;}
+.ndm a::after{display:none;}
+.ndm a:hover{background:var(--wm);color:var(--g);}
 
 .hero{background:var(--g);padding:128px 40px 76px;}
 .hero-in{max-width:var(--mx);margin:0 auto;}
@@ -247,8 +306,19 @@ h2{font-family:var(--fd);font-weight:700;font-size:clamp(24px,3.2vw,32px);color:
 .use h3{font-family:var(--fb);font-size:15.5px;font-weight:600;color:var(--g);margin-bottom:6px;}
 .use p{font-size:14.5px;color:var(--mu);font-weight:300;line-height:1.7;}
 
-.types{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px;}
-.types span{font-size:14px;color:var(--tx);background:var(--wm);border:1px solid var(--wd);border-radius:100px;padding:7px 16px;}
+/* Sub-industry accordions. Native <details>, no JS, and the copy stays in the
+   DOM when collapsed so crawlers and AI models still read it. */
+.types{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:26px;align-items:start;}
+.tcard{background:var(--wm);border:1px solid var(--wd);border-radius:var(--r);position:relative;overflow:hidden;}
+.tcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--o);opacity:0;transition:opacity .18s ease;}
+.tcard[open]::before,.tcard:hover::before{opacity:1;}
+.tcard summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;}
+.tcard summary::-webkit-details-marker{display:none;}
+.tcard-t{font-size:15.5px;font-weight:600;color:var(--g);line-height:1.35;}
+.tcard-i{flex:0 0 auto;width:32px;height:32px;border-radius:50%;background:var(--cr);border:1px solid var(--wd);display:flex;align-items:center;justify-content:center;transition:transform .2s ease,background .2s ease,border-color .2s ease;}
+.tcard-i img{display:block;}
+.tcard summary:hover .tcard-i,.tcard[open] .tcard-i{background:var(--wh);border-color:var(--o);transform:scale(1.1);}
+.tcard p{font-size:14.5px;color:var(--mu);font-weight:300;line-height:1.7;padding:0 20px 18px;margin-top:-2px;}
 
 .quals{margin-top:26px;border-top:1px solid var(--bd);}
 .qual{display:grid;grid-template-columns:190px 1fr;gap:18px;padding:16px 0;border-bottom:1px solid var(--bd);}
@@ -285,13 +355,13 @@ footer{border-top:1px solid var(--wd);}
 .skip{position:absolute;left:-9999px;top:0;background:var(--g);color:#fff;padding:12px 20px;z-index:9999;text-decoration:none;font-weight:600;}
 .skip:focus{left:0;}
 
-@media(max-width:980px){ nav .nr a:not(.ncta){display:none;} }
+@media(max-width:980px){ nav .nr a:not(.ncta),nav .nr .nd{display:none;} }
 @media(max-width:760px){
   nav{padding:0 20px;}
   .hero{padding:108px 20px 62px;}
   .wrap{padding:0 20px 80px;}
   .band{padding:24px 22px;gap:20px 30px;margin-top:-28px;}
-  .uses,.cards{grid-template-columns:1fr;}
+  .uses,.cards,.types{grid-template-columns:1fr;}
   .qual{grid-template-columns:1fr;gap:4px;}
   .cta{padding:40px 24px;}
   .fin{padding:26px 20px;}
@@ -396,9 +466,9 @@ ${nav('industries')}
   </section>
 
   <section class="sec">
-    <h2>Businesses we fund</h2>
+    <h2>Some of the businesses we work with</h2>
     <div class="types">
-      ${ind.types.map(t => `<span>${t}</span>`).join('\n      ')}
+      ${ind.types.map(([t, d]) => `<details class="tcard"><summary><span class="tcard-t">${t}</span><span class="tcard-i"><img src="/assets/brand/guavo-icon.svg" alt="" width="20" height="20"></span></summary><p>${d}</p></details>`).join('\n      ')}
     </div>
   </section>
 
@@ -468,7 +538,7 @@ ${nav('industries')}
     <p class="crumb"><a href="/">Home</a> &rsaquo; Industries</p>
     <div class="eyebrow">Industries</div>
     <h1>Who we fund</h1>
-    <p class="lede">Guavo works with established small businesses across seven areas. If your revenue is steady and your business has been open at least four months, there is likely a fit. Pick yours below.</p>
+    <p class="lede">Some of the businesses we work with. If your revenue is steady and you have been open at least four months, there is likely a fit. Start with whichever looks closest to yours.</p>
   </div>
 </header>
 
@@ -490,11 +560,6 @@ ${nav('industries')}
         <p>${i.intro}</p>
       </a>`).join('\n      ')}
     </div>
-  </section>
-
-  <section class="sec">
-    <h2>Not listed here?</h2>
-    <p>These are the areas we fund most often, not a complete list. If your business is established and generating steady revenue, apply and we will tell you quickly either way. The application uses a soft credit pull, so finding out costs you nothing.</p>
   </section>
 
   <div class="cta">

@@ -119,6 +119,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(250,248,244,
 .ncta{background:var(--g);color:var(--wh)!important;padding:9px 22px;border-radius:var(--r);font-weight:600!important;transition:background .2s!important;}
 .ncta:hover{background:var(--gm)!important;}
 .ncta.active::after{display:none;}
+/* Industries dropdown. CSS only: :hover for pointers, :focus-within for
+   keyboard. The nav is hidden below 980px so this never has to work on touch. */
+.nd{position:relative;display:inline-flex;align-items:center;}
+.ndm{position:absolute;top:calc(100% + 21px);left:50%;transform:translateX(-50%) translateY(-4px);min-width:230px;background:var(--wh);border:1px solid var(--wd);border-radius:var(--r);box-shadow:0 10px 34px rgba(0,55,36,.13);padding:8px;display:flex;flex-direction:column;gap:2px;opacity:0;visibility:hidden;transition:opacity .16s ease,transform .16s ease,visibility .16s;z-index:210;}
+.nd:hover .ndm,.nd:focus-within .ndm{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
+.ndm a{font-size:13.5px;font-weight:500;color:var(--tx);padding:9px 14px;border-radius:3px;white-space:nowrap;position:relative;}
+.ndm a::after{display:none;}
+.ndm a:hover{background:var(--wm);color:var(--g);}
 
 .hero{background:var(--g);padding:128px 40px 76px;}
 .hero-in{max-width:var(--mx);margin:0 auto;}
@@ -144,8 +152,19 @@ h2{font-family:var(--fd);font-weight:700;font-size:clamp(24px,3.2vw,32px);color:
 .use h3{font-family:var(--fb);font-size:15.5px;font-weight:600;color:var(--g);margin-bottom:6px;}
 .use p{font-size:14.5px;color:var(--mu);font-weight:300;line-height:1.7;}
 
-.types{display:flex;flex-wrap:wrap;gap:9px;margin-top:24px;}
-.types span{font-size:14px;color:var(--tx);background:var(--wm);border:1px solid var(--wd);border-radius:100px;padding:7px 16px;}
+/* Sub-industry accordions. Native <details>, no JS, and the copy stays in the
+   DOM when collapsed so crawlers and AI models still read it. */
+.types{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:26px;align-items:start;}
+.tcard{background:var(--wm);border:1px solid var(--wd);border-radius:var(--r);position:relative;overflow:hidden;}
+.tcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--o);opacity:0;transition:opacity .18s ease;}
+.tcard[open]::before,.tcard:hover::before{opacity:1;}
+.tcard summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;}
+.tcard summary::-webkit-details-marker{display:none;}
+.tcard-t{font-size:15.5px;font-weight:600;color:var(--g);line-height:1.35;}
+.tcard-i{flex:0 0 auto;width:32px;height:32px;border-radius:50%;background:var(--cr);border:1px solid var(--wd);display:flex;align-items:center;justify-content:center;transition:transform .2s ease,background .2s ease,border-color .2s ease;}
+.tcard-i img{display:block;}
+.tcard summary:hover .tcard-i,.tcard[open] .tcard-i{background:var(--wh);border-color:var(--o);transform:scale(1.1);}
+.tcard p{font-size:14.5px;color:var(--mu);font-weight:300;line-height:1.7;padding:0 20px 18px;margin-top:-2px;}
 
 .quals{margin-top:26px;border-top:1px solid var(--bd);}
 .qual{display:grid;grid-template-columns:190px 1fr;gap:18px;padding:16px 0;border-bottom:1px solid var(--bd);}
@@ -182,13 +201,13 @@ footer{border-top:1px solid var(--wd);}
 .skip{position:absolute;left:-9999px;top:0;background:var(--g);color:#fff;padding:12px 20px;z-index:9999;text-decoration:none;font-weight:600;}
 .skip:focus{left:0;}
 
-@media(max-width:980px){ nav .nr a:not(.ncta){display:none;} }
+@media(max-width:980px){ nav .nr a:not(.ncta),nav .nr .nd{display:none;} }
 @media(max-width:760px){
   nav{padding:0 20px;}
   .hero{padding:108px 20px 62px;}
   .wrap{padding:0 20px 80px;}
   .band{padding:24px 22px;gap:20px 30px;margin-top:-28px;}
-  .uses,.cards{grid-template-columns:1fr;}
+  .uses,.cards,.types{grid-template-columns:1fr;}
   .qual{grid-template-columns:1fr;gap:4px;}
   .cta{padding:40px 24px;}
   .fin{padding:26px 20px;}
@@ -203,7 +222,18 @@ footer{border-top:1px solid var(--wd);}
   <div class="nr">
     <a href="/#how-it-works">How it works</a>
     <a href="/#why-guavo">Why Guavo</a>
-    <a href="/industries/" class="active" aria-current="page">Industries</a>
+    <span class="nd">
+      <a href="/industries/" class="active" aria-current="page">Industries</a>
+      <div class="ndm">
+        <a href="/industries/restaurants.html">Restaurants & Bars</a>
+        <a href="/industries/medical-dental.html">Medical & Dental</a>
+        <a href="/industries/auto-repair.html">Auto & Repair</a>
+        <a href="/industries/professional-services.html">Professional Services</a>
+        <a href="/industries/retail.html">Retail & C-Stores</a>
+        <a href="/industries/contractors.html">Contractors & Trades</a>
+        <a href="/industries/salons-spas-gyms.html">Salons, Spas & Gyms</a>
+      </div>
+    </span>
     <a href="/#apply">Apply</a>
     <a href="/faq.html">FAQ</a>
     <a href="/#contact">Contact</a>
@@ -246,14 +276,14 @@ footer{border-top:1px solid var(--wd);}
   </section>
 
   <section class="sec">
-    <h2>Businesses we fund</h2>
+    <h2>Some of the businesses we work with</h2>
     <div class="types">
-      <span>Convenience stores</span>
-      <span>Gas stations with convenience retail</span>
-      <span>Beer, wine, and liquor stores</span>
-      <span>Clothing and shoe stores</span>
-      <span>Electronics and appliance retailers</span>
-      <span>General merchandise and specialty shops</span>
+      <details class="tcard"><summary><span class="tcard-t">Convenience stores</span><span class="tcard-i"><img src="/assets/brand/guavo-icon.svg" alt="" width="20" height="20"></span></summary><p>Thin margins carried by volume and consistency. Coolers, shelving, and a deeper stock of what actually moves are the usual funding targets.</p></details>
+      <details class="tcard"><summary><span class="tcard-t">Gas stations with convenience retail</span><span class="tcard-i"><img src="/assets/brand/guavo-icon.svg" alt="" width="20" height="20"></span></summary><p>Fuel inventory ties up serious capital before a gallon is sold, and the store attached to it is where the margin lives.</p></details>
+      <details class="tcard"><summary><span class="tcard-t">Beer, wine, and liquor stores</span><span class="tcard-i"><img src="/assets/brand/guavo-icon.svg" alt="" width="20" height="20"></span></summary><p>Inventory-first and highly seasonal. Buying deep ahead of holidays is often the difference between a good year and an average one.</p></details>
+      <details class="tcard"><summary><span class="tcard-t">Clothing, apparel, and shoe stores</span><span class="tcard-i"><img src="/assets/brand/guavo-icon.svg" alt="" width="20" height="20"></span></summary><p>Boutiques and independent apparel shops buy a season ahead and sell it down over months. Funding covers the buy, the fixtures, and the floor refresh.</p></details>
+      <details class="tcard"><summary><span class="tcard-t">Electronics and appliance retailers</span><span class="tcard-i"><img src="/assets/brand/guavo-icon.svg" alt="" width="20" height="20"></span></summary><p>High ticket, high inventory cost, and manufacturer terms that rarely favour the independent. Working capital keeps the floor stocked.</p></details>
+      <details class="tcard"><summary><span class="tcard-t">General merchandise and specialty shops</span><span class="tcard-i"><img src="/assets/brand/guavo-icon.svg" alt="" width="20" height="20"></span></summary><p>Gift, hobby, home goods, and other independents where the season you prepare for decides the year you have.</p></details>
     </div>
   </section>
 
