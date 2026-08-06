@@ -222,9 +222,13 @@ footer{border-top:1px solid var(--wd);}
 .skip{position:absolute;left:-9999px;top:0;background:var(--g);color:#fff;padding:12px 20px;z-index:9999;text-decoration:none;font-weight:600;}
 .skip:focus{left:0;}
 
+/* Collapse the nav links at the same width the homepage does. Below this the
+   six items crowd the logo. */
+@media(max-width:860px){
+  nav .nr a:not(.ncta){display:none;}
+}
 @media(max-width:720px){
   nav{padding:0 20px;}
-  nav .nr a:not(.ncta){display:none;}
   .hero{padding:114px 20px 66px;}
   .wrap{padding:0 20px 80px;}
   .qa{grid-template-columns:1fr;gap:0;padding:28px 0 24px;}
@@ -244,6 +248,7 @@ footer{border-top:1px solid var(--wd);}
   <div class="nr">
     <a href="/#how-it-works">How it works</a>
     <a href="/#why-guavo">Why Guavo</a>
+    <a href="/#apply">Apply</a>
     <a href="/faq.html" class="active" aria-current="page">FAQ</a>
     <a href="/#contact">Contact</a>
     <a href="/#apply" class="ncta">Get Funded</a>
