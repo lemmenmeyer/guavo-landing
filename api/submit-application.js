@@ -66,7 +66,7 @@
 //     business:  { legal_name, dba, entity_type, years_in_business, description,
 //                  street, city, state, postal, phone, email },
 //     owner:     { first_name, last_name, dob, ownership_pct, mobile_phone,
-//                  ssn_last4, street, city, state, postal, email },
+//                  ssn, street, city, state, postal, email },
 //     financing: { amount_requested, use_of_funds, monthly_revenue, notes }
 //   }
 
@@ -92,7 +92,7 @@ const MONDAY = {
     owner_first_name:    'text_mm5aa5wm',
     owner_last_name:     'text_mm5aa9t4',
     owner_dob:           'date_mm5acnen',
-    owner_ssn_last4:     'text_mm5afbjq',
+    owner_ssn:           'text_mm5afbjq',
     owner_home_address:  'text_mm5aj924',
     owner_city:          'text_mm5aspds',
     owner_state:         'text_mm5aq8s6',
@@ -439,7 +439,7 @@ async function mondayCreateItem({ token, itemName, business, owner, financing, a
   set(MONDAY.COLUMNS.owner_first_name,   s(owner.first_name));
   set(MONDAY.COLUMNS.owner_last_name,    s(owner.last_name));
   if (owner.dob)         set(MONDAY.COLUMNS.owner_dob, { date: s(owner.dob) });
-  if (owner.ssn_last4)   set(MONDAY.COLUMNS.owner_ssn_last4, s(owner.ssn_last4));
+  if (owner.ssn)         set(MONDAY.COLUMNS.owner_ssn, s(owner.ssn));
   set(MONDAY.COLUMNS.owner_home_address, s(owner.street));
   set(MONDAY.COLUMNS.owner_city,         s(owner.city));
   set(MONDAY.COLUMNS.owner_state,        s(owner.state).toUpperCase().slice(0, 2));
@@ -524,6 +524,9 @@ async function supabaseUpsertApplication({ url, key, business, owner, financing,
   const s = (v) => (v == null ? null : String(v).trim() || null);
   const st = (v) => { const up = s(v); return up && /^[A-Za-z]{2}$/.test(up) ? up.toUpperCase() : null; };
   const num = (v) => { if (v == null || v === '') return null; const n = Number(String(v).replace(/[^\d.-]/g, '')); return Number.isFinite(n) ? n : null; };
+  // The form sends a full SSN now. ssn_last4 stays populated, derived rather
+  // than collected, so existing readers of that column keep working.
+  const last4 = (v) => { const d = String(v == null ? '' : v).replace(/\D/g, ''); return d.length >= 4 ? d.slice(-4) : null; };
   const entityType = (v) => {
     const m = { LLC: 'LLC', Corporation: 'Corporation', Corp: 'Corporation', Inc: 'Corporation',
                 'S-Corp': 'S-Corp', 'S Corp': 'S-Corp', Partnership: 'Partnership',
@@ -596,7 +599,10 @@ async function supabaseUpsertApplication({ url, key, business, owner, financing,
       title: (['Owner','Manager','Managing Member','President','CEO','Sole Proprietor'].includes(s(owner.title))) ? s(owner.title) : null,
       ownership_pct: num(owner.ownership_pct),
       dob: s(owner.dob),
-      ssn_last4: s(owner.ssn_last4),
+      // owners.ssn is CHECK ~ ^[0-9]{9}$, so strip the display dashes.
+      ssn: ssnDigits(owner.ssn),
+      // Kept populated so anything already reading ssn_last4 keeps working.
+      ssn_last4: last4(owner.ssn),
       home_street: s(owner.street),
       home_city: s(owner.city),
       home_state: st(owner.state),
@@ -613,16 +619,35 @@ async function supabaseUpsertApplication({ url, key, business, owner, financing,
   return { applicant_id, deal_id };
 }
 
-// Strip SSN Last 4 (and only SSN Last 4) from any string that would surface in
-// a response or a log. The token is highly identifiable; other PII is already
-// visible to the ops team on Monday so redacting it here would be theater.
+// Strip the SSN from any string that would surface in a response or a log.
+// Other PII is already visible to the ops team on Monday, so redacting it here
+// would be theater; the SSN is the one token worth guarding.
+//
+// The form now sends a full nine-digit SSN, formatted XXX-XX-XXXX. The old
+// version of this only matched /^\d{4}$/, so it would have silently stopped
+// redacting anything at exactly the point the value became more sensitive.
+// Accepts both shapes, and redacts the digits with and without separators
+// because the value can be reformatted anywhere downstream.
 function redactSensitive(text, owner) {
   if (!text) return text;
-  const ssn = owner && owner.ssn_last4 ? String(owner.ssn_last4).trim() : '';
-  if (ssn && /^\d{4}$/.test(ssn)) {
-    return String(text).split(ssn).join('****');
+  const raw = owner && (owner.ssn || owner.ssn_last4);
+  const ssn = raw ? String(raw).trim() : '';
+  if (!ssn) return String(text);
+
+  const digits = ssn.replace(/\D/g, '');
+  if (!/^(\d{4}|\d{9})$/.test(digits)) return String(text);
+
+  const variants = new Set([ssn, digits]);
+  if (digits.length === 9) {
+    variants.add(`${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`);
+    variants.add(`${digits.slice(0, 3)} ${digits.slice(3, 5)} ${digits.slice(5)}`);
   }
-  return String(text);
+  let out = String(text);
+  // Longest first, so a full SSN is never partly masked by a shorter variant.
+  for (const v of [...variants].sort((a, b) => b.length - a.length)) {
+    if (v) out = out.split(v).join('****');
+  }
+  return out;
 }
 
 // Approximate raw byte count from a base64 string length.
