@@ -289,10 +289,10 @@ ${nav()}
     </a>`).join('\n    ')}
     <a class="card card-cta" id="other" href="/#apply">
       <span class="card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
-      <h3>Don&rsquo;t see yours?</h3>
-      <p class="card-b">Guavo works with small businesses across the United States.</p>
-      <p class="card-p">The industries above are the ones we fund most often. They are not all of them.</p>
-      <span class="card-e">Apply now &rarr;</span>
+      <h3>Don&rsquo;t see your industry?</h3>
+      <p class="card-b">These are some of the industries we work with. There are more.</p>
+      <p class="card-p">Guavo funds small businesses across the United States. If yours is established with steady revenue, apply now.</p>
+      <span class="card-e">Get started &rarr;</span>
     </a>
   </div>
 
