@@ -63,8 +63,8 @@
 //     // Pre-split structured payload used by the Monday integration.
 //     // Every value comes straight from a discrete form input — no server-
 //     // side name/address parsing.
-//     business:  { legal_name, dba, entity_type, years_in_business, description,
-//                  street, city, state, postal, phone, email },
+//     business:  { legal_name, dba, ein, entity_type, years_in_business,
+//                  description, street, city, state, postal, phone, email },
 //     owner:     { first_name, last_name, dob, ownership_pct, mobile_phone,
 //                  ssn, street, city, state, postal, email },
 //     financing: { amount_requested, use_of_funds, monthly_revenue, notes }
@@ -92,7 +92,7 @@ const MONDAY = {
     owner_first_name:    'text_mm5aa5wm',
     owner_last_name:     'text_mm5aa9t4',
     owner_dob:           'date_mm5acnen',
-    owner_ssn:           'text_mm5afbjq',
+    owner_ssn:           'text_mm5afbjq',   // last four only, see mondayCreateItem
     owner_home_address:  'text_mm5aj924',
     owner_city:          'text_mm5aspds',
     owner_state:         'text_mm5aq8s6',
@@ -418,6 +418,10 @@ async function mondayCreateItem({ token, itemName, business, owner, financing, a
   const columnValues = {};
   const set = (colId, val) => { if (val !== undefined && val !== null && val !== '') columnValues[colId] = val; };
   const s   = (v) => (v == null ? '' : String(v).trim());
+  // Monday is a shared board: every teammate and contractor with access reads
+  // this column, so only the last four go here. The full SSN lives in
+  // Postgres, where owners.ssn is service_role only (see migration 016).
+  const last4 = (v) => { const d = s(v).replace(/\D/g, ''); return d.length >= 4 ? d.slice(-4) : ''; };
 
   set(MONDAY.COLUMNS.business_legal_name, s(business.legal_name || ''));
   // Email + phone columns require object-shaped values, not bare strings.
@@ -439,7 +443,7 @@ async function mondayCreateItem({ token, itemName, business, owner, financing, a
   set(MONDAY.COLUMNS.owner_first_name,   s(owner.first_name));
   set(MONDAY.COLUMNS.owner_last_name,    s(owner.last_name));
   if (owner.dob)         set(MONDAY.COLUMNS.owner_dob, { date: s(owner.dob) });
-  if (owner.ssn)         set(MONDAY.COLUMNS.owner_ssn, s(owner.ssn));
+  if (owner.ssn)         set(MONDAY.COLUMNS.owner_ssn, last4(owner.ssn));
   set(MONDAY.COLUMNS.owner_home_address, s(owner.street));
   set(MONDAY.COLUMNS.owner_city,         s(owner.city));
   set(MONDAY.COLUMNS.owner_state,        s(owner.state).toUpperCase().slice(0, 2));
