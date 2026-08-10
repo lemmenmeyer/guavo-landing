@@ -345,6 +345,14 @@ module.exports = async function handler(req, res) {
     }
   } else if (supaUrl && supaKey && monday_status !== 'ok') {
     postgres_status = 'skipped_monday_failed';
+  } else {
+    // Missing env used to be indistinguishable from a deliberate skip: status
+    // stayed 'skipped', no error was set, and the request still returned 200.
+    // The dual-write was therefore dead from the day it shipped (2026-07-29)
+    // until 2026-08-10 without producing a single symptom — every row in
+    // Postgres had come from a backfill script, not from this handler.
+    postgres_status = 'skipped_not_configured';
+    console.warn('[submit-application] SUPABASE_URL/SUPABASE_SERVICE_KEY not set; applicant NOT written to Postgres', { ref_id, monday_item_id });
   }
 
   // Applicant-facing confirmation email. Nice-to-have, not required — if it

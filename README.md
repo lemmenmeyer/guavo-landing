@@ -25,6 +25,8 @@ Set these in Vercel Project Settings → Environment Variables:
 | `RESEND_FROM` | submit-application | Optional. Defaults to `Guavo Applications <contact@guavo.com>`. |
 | `RESEND_TO` | submit-application | Optional. Defaults to `apply@guavo.com`. |
 | `MONDAY_API_TOKEN` | both | Personal API v2 token from staura.monday.com Developer Center. |
+| `SUPABASE_URL` | submit-application | `https://<project-ref>.supabase.co`. Required for the Postgres dual-write. Omit both this and the service key and applications reach Monday but never Postgres, reported as `postgres_status: 'skipped_not_configured'`. |
+| `SUPABASE_SERVICE_KEY` | submit-application | `service_role` key. Bypasses RLS, so it must never be exposed to the browser. Needed to write `owners.ssn`, which migration 016 restricts to `service_role`. |
 | `MONDAY_WEBHOOK_SECRET` | send-decline | Long random string. Appended to the Monday automation's webhook URL as `?secret=...` OR sent as `X-Guavo-Webhook-Secret` header. |
 | `GMAIL_CLIENT_ID` | send-decline | Google Cloud OAuth 2.0 Client ID (Desktop app type). |
 | `GMAIL_CLIENT_SECRET` | send-decline | Paired with the Client ID. |
