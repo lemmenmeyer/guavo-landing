@@ -754,9 +754,11 @@ input[type=range]:focus-visible + .slider-thumb,
     <div class="field">
       <label for="timeInBiz">Time in Business</label>
       <select id="timeInBiz">
-        <option value="1">1 – 5 years</option>
-        <option value="1.5" selected>6 – 10 years</option>
-        <option value="2">10+ years</option>
+        <option value="1">Less than 3 years</option>
+        <option value="1.25">3 to 6 years</option>
+        <option value="1.5" selected>6 to 10 years</option>
+        <option value="1.75">10 to 20 years</option>
+        <option value="2">20+ years</option>
       </select>
     </div>
 
@@ -981,10 +983,11 @@ input[type=range]:focus-visible + .slider-thumb,
             <label for="f_years">Years in Business</label>
             <select id="f_years">
               <option value="">Select...</option>
-              <option>Less than 1 year</option>
-              <option>1 – 2 years</option>
-              <option>2 – 5 years</option>
-              <option>5+ years</option>
+              <option>Less than 3 years</option>
+              <option>3 to 6 years</option>
+              <option>6 to 10 years</option>
+              <option>10 to 20 years</option>
+              <option>20+ years</option>
             </select>
           </div>
           <div class="ff full">
@@ -1130,8 +1133,8 @@ input[type=range]:focus-visible + .slider-thumb,
 
         <!-- Bank Statements (optional) -->
         <div class="stmt-block" style="margin-top:22px;padding:20px 22px;background:var(--wm);border:1px solid var(--bd);border-radius:var(--r);">
-          <div style="font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Bank Statements (optional — strongly recommended)</div>
-          <p style="font-size:12.5px;color:var(--mu);margin-bottom:14px;line-height:1.6;">Upload the last 4 months of business bank statements to speed up review. PDF, JPG, PNG, or HEIC. Up to 1 MB per file (3 MB total).</p>
+          <div style="font-size:12px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Bank Statements (optional to prequalify, required for an offer)</div>
+          <p style="font-size:12.5px;color:var(--mu);margin-bottom:14px;line-height:1.6;">Upload the last 4 months of business bank statements to speed up review. PDF, JPG, PNG, or HEIC. Up to 3 MB total.</p>
           <div class="fgrid" style="gap:14px;">
             <div class="ff">
               <label for="f_stmt_1">Most recent month</label>
@@ -1166,6 +1169,7 @@ input[type=range]:focus-visible + .slider-thumb,
               <input id="f_stmt_4" type="file" class="filepick-input" accept="application/pdf,image/jpeg,image/png,image/heic,image/heif">
             </div>
           </div>
+          <p style="font-size:12.5px;color:var(--mu);margin-top:14px;margin-bottom:0;line-height:1.6;">Don't have them handy? Submit your application without them to get prequalified. You can send the statements later.</p>
         </div>
 
         <!-- Soft credit pull consent (FCRA written instructions) -->
