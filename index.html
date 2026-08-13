@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Guavo: Revenue-Based Financing for Small Businesses</title>
-<meta name="description" content="Guavo provides revenue-based financing to US small businesses. From $5K to $100K, approved in 24 hours. Payments scale to your weekly revenue.">
+<meta name="description" content="Guavo provides revenue-based financing to US small businesses. From $10K to $100K, approved in 24 hours. Payments scale to your weekly revenue.">
 <link rel="canonical" href="https://www.guavo.com/">
 <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
 
@@ -17,7 +17,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.guavo.com/">
 <meta property="og:title" content="Guavo: Revenue-Based Financing for Small Businesses">
-<meta property="og:description" content="Guavo provides revenue-based financing to US small businesses. From $5K to $100K, approved in 24 hours. Payments scale to your weekly revenue.">
+<meta property="og:description" content="Guavo provides revenue-based financing to US small businesses. From $10K to $100K, approved in 24 hours. Payments scale to your weekly revenue.">
 <meta property="og:image" content="https://www.guavo.com/assets/brand/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -26,7 +26,7 @@
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Guavo: Revenue-Based Financing for Small Businesses">
-<meta name="twitter:description" content="Guavo provides revenue-based financing to US small businesses. From $5K to $100K, approved in 24 hours. Payments scale to your weekly revenue.">
+<meta name="twitter:description" content="Guavo provides revenue-based financing to US small businesses. From $10K to $100K, approved in 24 hours. Payments scale to your weekly revenue.">
 <meta name="twitter:image" content="https://www.guavo.com/assets/brand/og-image.png">
 
 <!-- Structured data. Resolves "Guavo" to Guavo Inc. (financing) rather than the
@@ -42,7 +42,7 @@
       "name": "Guavo",
       "legalName": "Guavo Inc.",
       "url": "https://www.guavo.com/",
-      "description": "Guavo Inc. provides revenue-based financing to United States small businesses, from $5,000 to $100,000, with repayment collected as a percentage of weekly revenue.",
+      "description": "Guavo Inc. provides revenue-based financing to United States small businesses, from $10,000 to $100,000, with repayment collected as a percentage of weekly revenue.",
       "logo": {
         "@type": "ImageObject",
         "url": "https://www.guavo.com/assets/brand/guavo-logo-horizontal-2048.png"
@@ -88,7 +88,7 @@
       "@id": "https://www.guavo.com/#service",
       "name": "Revenue-Based Financing",
       "serviceType": "Revenue-based financing for small businesses",
-      "description": "Financing from $5,000 to $100,000 for United States small businesses. Repayment is collected as a fixed percentage of weekly deposits, so payments fall when revenue falls. Most applications are approved within 24 hours.",
+      "description": "Financing from $10,000 to $100,000 for United States small businesses. Repayment is collected as a fixed percentage of weekly deposits, so payments fall when revenue falls. Most applications are approved within 24 hours.",
       "provider": { "@id": "https://www.guavo.com/#organization" },
       "areaServed": {
         "@type": "Country",
@@ -98,7 +98,7 @@
         "@type": "Offer",
         "priceSpecification": {
           "@type": "PriceSpecification",
-          "minPrice": 5000,
+          "minPrice": 10000,
           "maxPrice": 100000,
           "priceCurrency": "USD"
         }
@@ -589,6 +589,12 @@ footer{background:var(--g);padding:52px 40px 30px;}
 .fi{max-width:var(--mx);margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;padding-bottom:36px;border-bottom:1px solid rgba(255,255,255,.1);}
 .flogo{height:26px;margin-bottom:13px;mix-blend-mode:screen;opacity:0.9;}
 .fabout{font-size:12.5px;color:rgba(255,255,255,.7);line-height:1.75;max-width:260px;}
+/* Reciprocal link to the LinkedIn page named in the Organization sameAs above.
+   A crawlable anchor is a stronger entity signal than sameAs on its own, and we
+   need it: three other companies share the "Guavo" name on LinkedIn. */
+.fsoc{display:inline-flex;align-items:center;gap:7px;margin-top:16px;font-size:13px;color:rgba(255,255,255,.65);text-decoration:none;transition:color .2s;}
+.fsoc:hover{color:var(--wh);}
+.fsoc svg{width:15px;height:15px;fill:currentColor;flex-shrink:0;}
 .fcol h3{font-size:11px;font-weight:600;color:rgba(255,255,255,.75);letter-spacing:1px;text-transform:uppercase;margin-bottom:13px;}
 .fcol a{display:block;font-size:13.5px;color:rgba(255,255,255,.65);text-decoration:none;margin-bottom:9px;transition:color .2s;}
 .fcol a:hover{color:var(--wh);}
@@ -741,10 +747,10 @@ input[type=range]:focus-visible + .slider-thumb,
         <div class="slider-track" id="fundTrack">
           <div class="slider-fill" id="fundFill" style="width:30%"></div>
           <div class="slider-thumb" id="fundThumb" style="left:30%"></div>
-          <input type="range" id="fundSlider" min="5000" max="250000" step="5000" value="40000" oninput="updateSlider('fund')" aria-label="Desired funding amount">
+          <input type="range" id="fundSlider" min="10000" max="250000" step="5000" value="40000" oninput="updateSlider('fund')" aria-label="Desired funding amount">
         </div>
         <div class="slider-labels">
-          <span>$5k</span>
+          <span>$10k</span>
           <span id="fundLabel" style="font-weight:600;color:var(--g);">$40,000</span>
           <span>$250k</span>
         </div>
@@ -1258,6 +1264,10 @@ input[type=range]:focus-visible + .slider-thumb,
     <div>
 
       <p class="fabout">Guavo Inc. provides revenue-based financing to small businesses. 2665 S Bayshore Drive, Suite 1020, Miami, FL 33133.</p>
+      <a class="fsoc" href="https://www.linkedin.com/company/guavocom" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>
+        Guavo on LinkedIn
+      </a>
     </div>
     <div class="fcol">
       <h3>Company</h3>

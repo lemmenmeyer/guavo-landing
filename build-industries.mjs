@@ -313,7 +313,8 @@ ${nav()}
       <a href="/industries/">Industries</a> &nbsp;&middot;&nbsp;
       <a href="/faq.html">FAQ</a> &nbsp;&middot;&nbsp;
       <a href="/privacy.html">Privacy</a> &nbsp;&middot;&nbsp;
-      <a href="/terms.html">Terms</a>
+      <a href="/terms.html">Terms</a> &nbsp;&middot;&nbsp;
+      <a href="https://www.linkedin.com/company/guavocom" target="_blank" rel="noopener">LinkedIn</a>
     </span>
   </div>
 </footer>
