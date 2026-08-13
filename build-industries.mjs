@@ -55,11 +55,11 @@ const INDUSTRIES = [
   },
   {
     slug: 'retail',
-    nav: 'Retail & C-Stores',
+    nav: 'Retail & Convenience',
     icon: `<path d="M4 8h16l-1.2 12.2a1.8 1.8 0 0 1-1.8 1.6H7a1.8 1.8 0 0 1-1.8-1.6z"/><path d="M8.5 8V6a3.5 3.5 0 0 1 7 0v2"/>`,
     blurb: 'Inventory is bought months before any of it sells.',
     purposes: 'Seasonal stock, coolers and fixtures, POS systems, and store remodels.',
-    examples: 'Convenience stores, gas stations, liquor, clothing, electronics'
+    examples: 'Convenience stores, liquor, clothing, electronics'
   },
   {
     slug: 'contractors',
