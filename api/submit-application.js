@@ -701,7 +701,7 @@ function renderHtmlBody({ applicant_name, business_name, applicant_email, amount
   </p>
   <pre style="font-family:Consolas,Monaco,'Courier New',monospace;font-size:12px;background:#FAF8F4;padding:14px;border-radius:4px;white-space:pre-wrap;color:#1a1a16;border:1px solid #D4CCBF;">${esc(summary)}</pre>
   <hr style="border:none;border-top:1px solid #D4CCBF;margin:20px 0;">
-  <p style="font-size:11px;color:#6B6358;margin:0;">Guavo Inc. &nbsp;|&nbsp; contact@guavo.com &nbsp;|&nbsp; (714) 400-2237 &nbsp;|&nbsp; Miami, FL</p>
+  <p style="font-size:11px;color:#6B6358;margin:0;">Guavo Inc. &nbsp;|&nbsp; contact@guavo.com &nbsp;|&nbsp; (645) 300-2180 &nbsp;|&nbsp; Miami, FL</p>
 </body></html>`;
 }
 
