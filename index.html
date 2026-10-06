@@ -516,6 +516,9 @@ input[type=range]{
 }
 .ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--g);background:var(--wh);}
 .ff textarea{resize:vertical;min-height:80px;}
+/* Per-step validation (validateStep): flags only fields that would block submit. */
+.ff.has-err input,.ff.has-err select,.ff.has-err textarea,.ff.has-err .filepick{border-color:#b3261e;}
+.ferr{font-size:12px;color:#b3261e;margin-top:2px;}
 
 /* File picker: custom-styled to replace the native input's Choose-File button.
    The real <input type=file> is visually hidden but focusable via the wrapping label.
@@ -958,7 +961,7 @@ input[type=range]:focus-visible + .slider-thumb,
     <h2 class="sec-h" style="margin-bottom:6px;">Get your offer today</h2>
     <p class="sec-s" style="margin-bottom:32px;font-size:15px;">Takes less than 3 minutes. Soft credit pull only — no impact on your score.</p>
 
-    <form id="applyForm" onsubmit="submitForm(event)">
+    <form id="applyForm" onsubmit="submitForm(event)" novalidate>
 
       <!-- PAGE 1 -->
       <div class="fp active" id="fp1">
@@ -1027,7 +1030,7 @@ input[type=range]:focus-visible + .slider-thumb,
         </div>
 
         <div class="fsub">
-          <button type="button" class="bp" onclick="goStep(2)">
+          <button type="button" class="bp" onclick="nextStep(2)">
             Continue
             <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -1084,7 +1087,7 @@ input[type=range]:focus-visible + .slider-thumb,
         </div>
         <div class="fsub">
           <button type="button" class="bback" onclick="goStep(1)">← Back</button>
-          <button type="button" class="bp" onclick="goStep(3)">
+          <button type="button" class="bp" onclick="nextStep(3)">
             Continue
             <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
@@ -1457,6 +1460,80 @@ function goStep(n){
   document.getElementById('apply').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
+// PER-STEP VALIDATION
+// The Continue buttons used to advance without checking anything, so a bad
+// field on step 1 or 2 only surfaced at Submit, where the browser can't focus
+// a control inside a hidden pane and silently blocks the submit. We now run
+// the same checkValidity() the browser would run, one pane at a time, so only
+// required / pattern / range fields are ever flagged. Optional fields carry no
+// constraints and are never flagged.
+function fieldError(el){
+  const v = el.validity;
+  if (el.id === 'f_govid')    return 'Please upload a photo ID.';
+  if (el.id === 'f_softpull') return 'Please check I AGREE to continue.';
+  if (v.valueMissing)         return 'This field is required.';
+  if (el.id === 'f_ein')      return 'Enter 9 digits, e.g. 12-3456789.';
+  if (el.id === 'f_ssn')      return 'Enter 9 digits, e.g. 123-45-6789.';
+  if (/_postal$/.test(el.id)) return 'Enter a 5-digit ZIP, e.g. 33101.';
+  if (v.typeMismatch && el.type === 'email') return 'Enter a valid email address.';
+  if (el.id === 'f_ownership') return 'Enter a number from 1 to 100.';
+  return el.validationMessage;
+}
+
+function errWrap(el){ return el.closest('.ff') || el.closest('.consent-check'); }
+
+function clearFieldError(el){
+  const w = errWrap(el);
+  if (!w) return;
+  w.classList.remove('has-err');
+  const msg = w.classList.contains('ff') ? w.querySelector(':scope > .ferr') : w.nextElementSibling;
+  if (msg && msg.classList.contains('ferr')) msg.remove();
+}
+
+function showFieldError(el, text){
+  const w = errWrap(el);
+  if (!w) return;
+  w.classList.add('has-err');
+  const inFf = w.classList.contains('ff');
+  let msg = inFf ? w.querySelector(':scope > .ferr') : w.nextElementSibling;
+  if (!msg || !msg.classList.contains('ferr')) {
+    msg = document.createElement('div');
+    msg.className = 'ferr';
+    msg.setAttribute('role', 'alert');
+    if (inFf) w.appendChild(msg); else w.after(msg);
+  }
+  msg.textContent = text;
+}
+
+function validateStep(n){
+  const fields = document.querySelectorAll('#fp' + n + ' input, #fp' + n + ' select, #fp' + n + ' textarea');
+  let first = null;
+  const bad = [];
+  fields.forEach(el => {
+    if (el.checkValidity()) { clearFieldError(el); return; }
+    showFieldError(el, fieldError(el));
+    bad.push(el.id);
+    if (!first) first = el;
+  });
+  if (!first) return true;
+  track('app_step_invalid', { step: n, fields: bad.join(',') });
+  (errWrap(first) || first).scrollIntoView({ behavior: 'smooth', block: 'center' });
+  first.focus({ preventScroll: true });
+  return false;
+}
+
+function nextStep(n){
+  if (validateStep(n - 1)) goStep(n);
+}
+
+// Clear a field's error as soon as the applicant fixes it.
+['input', 'change'].forEach(evt => {
+  document.getElementById('applyForm').addEventListener(evt, e => {
+    const el = e.target;
+    if (el && el.checkValidity && el.checkValidity()) clearFieldError(el);
+  });
+});
+
 function g(id){ return (document.getElementById(id)||{}).value || ''; }
 
 // Compose a human-readable single-line address from 4 discrete inputs.
@@ -1488,6 +1565,17 @@ async function submitForm(e){
   // comparing this against generate_lead (success) also surfaces failed or
   // abandoned submits, not just the ones that completed.
   track('app_submit_attempt');
+
+  // Safety net: the form is novalidate, so re-check every pane here and jump
+  // back to the first one with a problem instead of failing silently.
+  for (let k = 1; k <= 3; k++) {
+    if (!document.getElementById('fp' + k).querySelector(':invalid')) continue;
+    goStep(k);
+    // Next frame: let the pane swap settle so the scroll to the bad field
+    // isn't cancelled by goStep's own smooth scroll to #apply.
+    requestAnimationFrame(() => validateStep(k));
+    return;
+  }
 
   // Validate soft-pull credit authorization (FCRA written instructions)
   const softPull = document.getElementById('f_softpull');
